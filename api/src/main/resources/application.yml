@@ -1,0 +1,42 @@
+# Application configuration
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: books-authors-api
+  
+  # Database configuration
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521:XE
+    username: Maya
+    password: Maya
+    driver-class-name: oracle.jdbc.OracleDriver
+  
+  # JPA configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+    show-sql: true
+
+# OpenAPI Documentation configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+  packages-to-scan: com.books.api.controller
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.books: DEBUG
+    org.springframework.jdbc.core: DEBUG
