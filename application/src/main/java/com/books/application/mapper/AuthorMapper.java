@@ -29,7 +29,7 @@ public interface AuthorMapper {
      * @return the resulting AuthorDTO
      */
     @Mapping(target = "fullName", expression = "java(author.getFullName())")
-    @Mapping(target = "bookIds", expression = "java(mapBookIdsFromAuthor(author))")
+    @Mapping(target = "bookBookIds", expression = "java(mapBookBookIdsFromAuthor(author))")
     AuthorDTO toDto(Author author);
 
     /**
@@ -56,12 +56,12 @@ public interface AuthorMapper {
      * @param author the Author entity from which to extract book IDs
      * @return a set of book IDs
      */
-    default Set<Long> mapBookIdsFromAuthor(Author author) {
+    default Set<Long> mapBookBookIdsFromAuthor(Author author) {
         if (author.getBooks() == null) {
             return Set.of();
         }
         return author.getBooks().stream()
-                .map(Book::getId)
+                .map(Book::getBookId)
                 .collect(Collectors.toSet());
     }
 }

@@ -2,6 +2,8 @@ package com.books.domain.repository;
 
 import com.books.domain.model.Author;
 
+import lombok.NonNull;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +21,7 @@ public interface AuthorRepository {
      *
      * @return a list of all authors
      */
+    @NonNull
     List<Author> findAll();
 
     /**
@@ -62,5 +65,11 @@ public interface AuthorRepository {
      */
     List<Author> findByBookGenre(String genre);
 
+    /**
+     * Finds authors who have written a book with the given ID.
+     *
+     * @param bookId the ID of the book to search for
+     * @return a list of authors who have written a book with the given ID
+     */
     List<Author> findByBookId(Long bookId);
 }

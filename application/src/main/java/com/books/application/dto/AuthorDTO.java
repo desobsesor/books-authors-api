@@ -21,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthorDTO {
-    private Long id;
+    private Long authorId;
     private String firstName;
     private String lastName;
     private LocalDate birthDate;
@@ -37,5 +37,5 @@ public class AuthorDTO {
      * A Set is used to avoid duplicates.
      */
     @Builder.Default
-    private Set<Long> bookIds = new HashSet<>();
+    private Set<Long> bookBookIds = new HashSet<>();
 }
