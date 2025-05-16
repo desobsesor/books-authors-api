@@ -20,7 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Author {
-    private Long id;
+    private Long authorId;
     private String firstName;
     private String lastName;
     private LocalDate birthDate;

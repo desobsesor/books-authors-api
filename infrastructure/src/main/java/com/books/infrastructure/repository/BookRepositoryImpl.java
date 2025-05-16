@@ -37,7 +37,7 @@ public class BookRepositoryImpl implements BookRepository {
      */
     private Book mapRowToBook(ResultSet rs, int rowNum) throws SQLException {
         return Book.builder()
-                .id(rs.getLong("BOOK_ID"))
+                .bookId(rs.getLong("BOOK_ID"))
                 .title(rs.getString("TITLE"))
                 .isbn(rs.getString("ISBN"))
                 .publicationDate(rs.getDate("PUBLICATION_DATE").toLocalDate())
@@ -54,10 +54,10 @@ public class BookRepositoryImpl implements BookRepository {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("GET_ALL_BOOKS")
-                .returningResultSet("BOOKS", this::mapRowToBook);
+                .returningResultSet("p_books", this::mapRowToBook);
 
         Map<String, Object> result = jdbcCall.execute(new HashMap<>());
-        return (List<Book>) result.get("BOOKS");
+        return (List<Book>) result.get("p_books");
     }
 
     @Override
@@ -89,7 +89,7 @@ public class BookRepositoryImpl implements BookRepository {
                 .withProcedureName("SAVE_BOOK");
 
         Map<String, Object> inParams = new HashMap<>();
-        inParams.put("P_BOOK_ID", book.getId());
+        inParams.put("P_BOOK_ID", book.getBookId());
         inParams.put("P_TITLE", book.getTitle());
         inParams.put("P_ISBN", book.getIsbn());
         inParams.put("P_PUBLICATION_DATE", java.sql.Date.valueOf(book.getPublicationDate()));
@@ -99,12 +99,12 @@ public class BookRepositoryImpl implements BookRepository {
 
         Map<String, Object> result = jdbcCall.execute(inParams);
         Long bookId = (Long) result.get("P_BOOK_ID");
-        book.setId(bookId);
+        book.setBookId(bookId);
 
         // Save book-author relationships if authors exist
         if (!book.getAuthors().isEmpty()) {
             for (Author author : book.getAuthors()) {
-                saveBookAuthorRelationship(book.getId(), author.getId());
+                saveBookAuthorRelationship(book.getBookId(), author.getAuthorId());
             }
         }
 

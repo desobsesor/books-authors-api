@@ -38,7 +38,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         @Override
         public Author mapRow(ResultSet rs, int rowNum) throws SQLException {
             return Author.builder()
-                    .id(rs.getLong("author_id"))
+                    .authorId(rs.getLong("author_id"))
                     .firstName(rs.getString("first_name"))
                     .lastName(rs.getString("last_name"))
                     .birthDate(rs.getDate("birth_date") != null ? rs.getDate("birth_date").toLocalDate() : null)
@@ -51,13 +51,24 @@ public class AuthorRepositoryImpl implements AuthorRepository {
     public List<Author> findAll() {
         log.debug("Getting all authors using stored procedure");
 
-        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withCatalogName("AUTHOR_PKG")
-                .withProcedureName("GET_ALL_AUTHORS")
-                .returningResultSet("authors", AUTHOR_ROW_MAPPER);
+        try {
+            SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                    .withCatalogName("AUTHOR_PKG")
+                    .withProcedureName("GET_ALL_AUTHORS")
+                    .returningResultSet("p_authors", AUTHOR_ROW_MAPPER);
 
-        Map<String, Object> result = jdbcCall.execute(new HashMap<>());
-        return (List<Author>) result.get("authors");
+            Map<String, Object> result = jdbcCall.execute(new HashMap<>());
+            if (result == null) {
+                log.warn("Stored procedure returned null result");
+                return List.of();
+            }
+
+            List<Author> authors = (List<Author>) result.get("p_authors");
+            return authors != null ? authors : List.of();
+        } catch (Exception e) {
+            log.error("Error retrieving all authors", e);
+            return List.of();
+        }
     }
 
     @Override
@@ -94,7 +105,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 .addValue("p_birth_date", author.getBirthDate())
                 .addValue("p_biography", author.getBiography());
 
-        if (author.getId() == null) {
+        if (author.getAuthorId() == null) {
             // Create new author
             jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     .withCatalogName("AUTHOR_PKG")
@@ -103,14 +114,14 @@ public class AuthorRepositoryImpl implements AuthorRepository {
 
             Map<String, Object> result = jdbcCall.execute(params);
             Long newId = ((Number) result.get("p_author_id")).longValue();
-            author.setId(newId);
+            author.setAuthorId(newId);
         } else {
             // Update existing author
             jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     .withCatalogName("AUTHOR_PKG")
                     .withProcedureName("UPDATE_AUTHOR");
 
-            params.addValue("p_author_id", author.getId());
+            params.addValue("p_author_id", author.getAuthorId());
             jdbcCall.execute(params);
         }
 
@@ -150,7 +161,8 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 .addValue("p_last_name", lastName);
 
         Map<String, Object> result = jdbcCall.execute(params);
-        return (List<Author>) result.get("authors");
+        List<Author> authors = (List<Author>) result.get("authors");
+        return authors != null ? authors : List.of();
     }
 
     @Override
@@ -172,7 +184,8 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 .addValue("p_genre", genre);
 
         Map<String, Object> result = jdbcCall.execute(params);
-        return (List<Author>) result.get("authors");
+        List<Author> authors = (List<Author>) result.get("authors");
+        return authors != null ? authors : List.of();
     }
 
     @Override
@@ -188,6 +201,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 .addValue("p_book_id", bookId);
 
         Map<String, Object> result = jdbcCall.execute(params);
-        return (List<Author>) result.get("authors");
+        List<Author> authors = (List<Author>) result.get("authors");
+        return authors != null ? authors : List.of();
     }
 }

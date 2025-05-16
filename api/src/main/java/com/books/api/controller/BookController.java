@@ -93,7 +93,7 @@ public class BookController {
             @RequestBody Book book) {
         return bookService.findBookById(id)
                 .map(existingBook -> {
-                    book.setId(id);
+                    book.setBookId(id);
                     return ResponseEntity.ok(bookService.saveBook(book));
                 })
                 .orElse(ResponseEntity.notFound().build());
