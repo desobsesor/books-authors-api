@@ -20,7 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Book {
-    private Long id;
+    private Long bookId;
     private String title;
     private String isbn;
     private LocalDate publicationDate;
