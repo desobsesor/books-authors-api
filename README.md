@@ -57,7 +57,7 @@ mvn spring-boot:run -pl api
 Once the application is running, you can access the OpenAPI documentation at:
 
 ```
-http://localhost:8080/swagger-ui.html
+http://localhost:8080/swagger-ui/index.html
 ```
 
 ## Database Setup
