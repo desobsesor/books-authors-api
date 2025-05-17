@@ -85,7 +85,7 @@ public class AuthorController {
                         @ApiResponse(responseCode = "400", description = "Invalid author data", content = @Content)
         })
         public ResponseEntity<AuthorDTO> createAuthor(
-                        @Parameter(description = "Data to create the author", required = true) @Valid @RequestBody CreateAuthorDTO createAuthorDTO) {
+                        @Parameter(description = "Data to create the author", required = true) @RequestBody CreateAuthorDTO createAuthorDTO) {
                 log.debug("REST request to create a new author: {}", createAuthorDTO);
                 AuthorDTO result = authorService.createAuthor(createAuthorDTO);
                 return ResponseEntity.status(HttpStatus.CREATED).body(result);

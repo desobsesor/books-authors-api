@@ -1,5 +1,9 @@
 package com.books.api.controller;
 
+import com.books.application.dto.BookDTO;
+import com.books.application.dto.CreateAuthorDTO;
+import com.books.application.dto.CreateBookDTO;
+import com.books.application.dto.UpdateBookDTO;
 import com.books.application.service.BookService;
 import com.books.domain.model.Book;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +31,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Books", description = "Book management API")
 public class BookController {
 
@@ -70,8 +77,10 @@ public class BookController {
     @PostMapping
     @Operation(summary = "Create a new book", description = "Creates a new book in the system")
     @ApiResponse(responseCode = "201", description = "Book created successfully")
-    public ResponseEntity<Book> createBook(@RequestBody Book book) {
-        Book savedBook = bookService.saveBook(book);
+    public ResponseEntity<BookDTO> createBook(
+            @Parameter(description = "Data to create the author", required = true) @RequestBody CreateBookDTO createBookDTO) {
+        log.debug("REST request to create a new book: {}", createBookDTO);
+        BookDTO savedBook = bookService.createBook(createBookDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
     }
 
@@ -88,14 +97,12 @@ public class BookController {
             @ApiResponse(responseCode = "200", description = "Book updated successfully"),
             @ApiResponse(responseCode = "404", description = "Book not found")
     })
-    public ResponseEntity<Book> updateBook(
+    public ResponseEntity<BookDTO> updateBook(
             @Parameter(description = "ID of the book to update") @PathVariable Long id,
-            @RequestBody Book book) {
-        return bookService.findBookById(id)
-                .map(existingBook -> {
-                    book.setBookId(id);
-                    return ResponseEntity.ok(bookService.saveBook(book));
-                })
+            @Parameter(description = "Updated book data", required = true) @RequestBody UpdateBookDTO updateBookDTO) {
+        log.debug("REST request to update book with ID: {}", id);
+        return bookService.updateBook(id, updateBookDTO)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
