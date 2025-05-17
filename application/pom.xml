@@ -21,6 +21,12 @@
             <artifactId>domain</artifactId>
         </dependency>
 
+        <!-- Spring Boot Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
         <!-- Spring Context for dependency injection -->
         <dependency>
             <groupId>org.springframework</groupId>

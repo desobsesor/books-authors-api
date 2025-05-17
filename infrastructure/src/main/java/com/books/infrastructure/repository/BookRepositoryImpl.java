@@ -4,6 +4,8 @@ import com.books.domain.model.Author;
 import com.books.domain.model.Book;
 import com.books.domain.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
@@ -23,6 +25,7 @@ import java.util.Optional;
  */
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class BookRepositoryImpl implements BookRepository {
 
     private final JdbcTemplate jdbcTemplate;
@@ -47,7 +50,6 @@ public class BookRepositoryImpl implements BookRepository {
                 .build();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<Book> findAll() {
         // Call PL/SQL procedure: BOOK_PKG.GET_ALL_BOOKS
@@ -57,7 +59,13 @@ public class BookRepositoryImpl implements BookRepository {
                 .returningResultSet("p_books", this::mapRowToBook);
 
         Map<String, Object> result = jdbcCall.execute(new HashMap<>());
-        return (List<Book>) result.get("p_books");
+        if (result == null) {
+            log.warn("Stored procedure returned null result");
+            return List.of();
+        }
+
+        List<Book> books = (List<Book>) result.get("p_books");
+        return books != null ? books : List.of();
     }
 
     @Override
@@ -67,16 +75,17 @@ public class BookRepositoryImpl implements BookRepository {
             SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     .withCatalogName("BOOK_PKG")
                     .withProcedureName("GET_BOOK_BY_ID")
-                    .returningResultSet("BOOK", this::mapRowToBook);
+                    .returningResultSet("p_book", this::mapRowToBook);
 
             Map<String, Object> inParams = new HashMap<>();
-            inParams.put("P_BOOK_ID", id);
+            inParams.put("p_book_id", id);
 
             Map<String, Object> result = jdbcCall.execute(inParams);
-            List<Book> books = (List<Book>) result.get("BOOK");
+            List<Book> books = (List<Book>) result.get("p_book");
 
             return books.isEmpty() ? Optional.empty() : Optional.of(books.get(0));
         } catch (Exception e) {
+            log.error("Error finding book with ID: {}", id, e);
             return Optional.empty();
         }
     }
@@ -151,13 +160,13 @@ public class BookRepositoryImpl implements BookRepository {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_TITLE")
-                .returningResultSet("BOOKS", this::mapRowToBook);
+                .returningResultSet("p_books", this::mapRowToBook);
 
         Map<String, Object> inParams = new HashMap<>();
         inParams.put("P_TITLE", "%" + title + "%");
 
         Map<String, Object> result = jdbcCall.execute(inParams);
-        return (List<Book>) result.get("BOOKS");
+        return (List<Book>) result.get("p_books");
     }
 
     @Override
@@ -166,13 +175,13 @@ public class BookRepositoryImpl implements BookRepository {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_GENRE")
-                .returningResultSet("BOOKS", this::mapRowToBook);
+                .returningResultSet("p_books", this::mapRowToBook);
 
         Map<String, Object> inParams = new HashMap<>();
         inParams.put("P_GENRE", genre);
 
         Map<String, Object> result = jdbcCall.execute(inParams);
-        return (List<Book>) result.get("BOOKS");
+        return (List<Book>) result.get("p_books");
     }
 
     @Override
@@ -181,13 +190,13 @@ public class BookRepositoryImpl implements BookRepository {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_AUTHOR")
-                .returningResultSet("BOOKS", this::mapRowToBook);
+                .returningResultSet("p_books", this::mapRowToBook);
 
         Map<String, Object> inParams = new HashMap<>();
         inParams.put("P_AUTHOR_ID", authorId);
 
         Map<String, Object> result = jdbcCall.execute(inParams);
-        return (List<Book>) result.get("BOOKS");
+        return (List<Book>) result.get("p_books");
     }
 
     @Override
@@ -196,13 +205,13 @@ public class BookRepositoryImpl implements BookRepository {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_YEAR_RANGE")
-                .returningResultSet("BOOKS", this::mapRowToBook);
+                .returningResultSet("p_books", this::mapRowToBook);
 
         Map<String, Object> inParams = new HashMap<>();
         inParams.put("P_START_YEAR", startYear);
         inParams.put("P_END_YEAR", endYear);
 
         Map<String, Object> result = jdbcCall.execute(inParams);
-        return (List<Book>) result.get("BOOKS");
+        return (List<Book>) result.get("p_books");
     }
 }

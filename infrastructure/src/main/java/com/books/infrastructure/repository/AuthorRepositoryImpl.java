@@ -63,6 +63,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 return List.of();
             }
 
+            @SuppressWarnings("unchecked")
             List<Author> authors = (List<Author>) result.get("p_authors");
             return authors != null ? authors : List.of();
         } catch (Exception e) {
@@ -85,6 +86,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                     .addValue("p_author_id", id);
 
             Map<String, Object> result = jdbcCall.execute(params);
+            @SuppressWarnings("unchecked")
             List<Author> authors = (List<Author>) result.get("p_author");
 
             return authors.isEmpty() ? Optional.empty() : Optional.of(authors.get(0));
@@ -157,6 +159,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 .addValue("p_last_name", lastName);
 
         Map<String, Object> result = jdbcCall.execute(params);
+        @SuppressWarnings("unchecked")
         List<Author> authors = (List<Author>) result.get("p_authors");
         return authors != null ? authors : List.of();
     }
@@ -180,6 +183,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 .addValue("p_genre", genre);
 
         Map<String, Object> result = jdbcCall.execute(params);
+        @SuppressWarnings("unchecked")
         List<Author> authors = (List<Author>) result.get("p_authors");
         return authors != null ? authors : List.of();
     }
@@ -197,6 +201,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 .addValue("p_book_id", bookId);
 
         Map<String, Object> result = jdbcCall.execute(params);
+        @SuppressWarnings("unchecked")
         List<Author> authors = (List<Author>) result.get("p_authors");
         return authors != null ? authors : List.of();
     }
