@@ -24,6 +24,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Schema(description = "Data for updating an existing author")
 public class UpdateAuthorDTO {
+    @Schema(description = "Author's ID", example = "1")
+    private Long authorId;
 
     @Size(min = 1, max = 100, message = "First name must be between 1 and 100 characters")
     @Schema(description = "Author's first name", example = "Gabriel")
