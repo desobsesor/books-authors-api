@@ -68,6 +68,12 @@ CREATE OR REPLACE PACKAGE AUTHOR_PKG AS
         p_genre IN VARCHAR2,
         p_authors OUT SYS_REFCURSOR
     );
+
+    -- Find authors by book genre
+    PROCEDURE FIND_AUTHORS_BY_BOOK_ID(
+        p_book_id IN NUMBER,
+        p_authors OUT SYS_REFCURSOR
+    );
 END AUTHOR_PKG;
 /
 
@@ -177,6 +183,21 @@ CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
         WHERE UPPER(b.genre) = UPPER(p_genre)
         ORDER BY a.last_name, a.first_name;
     END FIND_AUTHORS_BY_BOOK_GENRE;
+
+    -- Find authors by book id
+    PROCEDURE FIND_AUTHORS_BY_BOOK_ID(
+        p_book_id IN NUMBER,
+        p_authors OUT SYS_REFCURSOR
+    ) IS
+    BEGIN
+        OPEN p_authors FOR
+        SELECT DISTINCT a.author_id, a.first_name, a.last_name, a.birth_date, a.biography
+        FROM authors a
+        JOIN book_authors ba ON a.author_id = ba.author_id
+        JOIN books b ON ba.book_id = b.book_id
+        WHERE b.p_book_id = p_book_id
+        ORDER BY a.last_name, a.first_name;
+    END FIND_AUTHORS_BY_BOOK_ID;
 END AUTHOR_PKG;
 /
 
@@ -402,5 +423,6 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
         WHERE EXTRACT(YEAR FROM b.publication_date) BETWEEN p_start_year AND p_end_year
         ORDER BY b.publication_date;
     END FIND_BOOKS_BY_YEAR_RANGE;
+
 END BOOK_PKG;
 /

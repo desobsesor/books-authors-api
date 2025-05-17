@@ -79,13 +79,13 @@ public class AuthorRepositoryImpl implements AuthorRepository {
             SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     .withCatalogName("AUTHOR_PKG")
                     .withProcedureName("GET_AUTHOR_BY_ID")
-                    .returningResultSet("author", AUTHOR_ROW_MAPPER);
+                    .returningResultSet("p_author", AUTHOR_ROW_MAPPER);
 
             MapSqlParameterSource params = new MapSqlParameterSource()
                     .addValue("p_author_id", id);
 
             Map<String, Object> result = jdbcCall.execute(params);
-            List<Author> authors = (List<Author>) result.get("author");
+            List<Author> authors = (List<Author>) result.get("p_author");
 
             return authors.isEmpty() ? Optional.empty() : Optional.of(authors.get(0));
         } catch (Exception e) {
@@ -98,32 +98,22 @@ public class AuthorRepositoryImpl implements AuthorRepository {
     public Author save(Author author) {
         log.debug("Saving author: {}", author);
 
-        SimpleJdbcCall jdbcCall;
+        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                .withCatalogName("AUTHOR_PKG")
+                .withProcedureName("SAVE_AUTHOR")
+                .declareParameters(
+                        new org.springframework.jdbc.core.SqlOutParameter("p_author_id", java.sql.Types.NUMERIC));
+
         MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("p_author_id", author.getAuthorId())
                 .addValue("p_first_name", author.getFirstName())
                 .addValue("p_last_name", author.getLastName())
                 .addValue("p_birth_date", author.getBirthDate())
                 .addValue("p_biography", author.getBiography());
 
-        if (author.getAuthorId() == null) {
-            // Create new author
-            jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                    .withCatalogName("AUTHOR_PKG")
-                    .withProcedureName("CREATE_AUTHOR")
-                    .withReturnValue();
-
-            Map<String, Object> result = jdbcCall.execute(params);
-            Long newId = ((Number) result.get("p_author_id")).longValue();
-            author.setAuthorId(newId);
-        } else {
-            // Update existing author
-            jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                    .withCatalogName("AUTHOR_PKG")
-                    .withProcedureName("UPDATE_AUTHOR");
-
-            params.addValue("p_author_id", author.getAuthorId());
-            jdbcCall.execute(params);
-        }
+        Map<String, Object> result = jdbcCall.execute(params);
+        Long newId = ((Number) result.get("p_author_id")).longValue();
+        author.setAuthorId(newId);
 
         return author;
     }
@@ -135,13 +125,19 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         try {
             SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     .withCatalogName("AUTHOR_PKG")
-                    .withProcedureName("DELETE_AUTHOR");
+                    .withProcedureName("DELETE_AUTHOR")
+                    .declareParameters(
+                            new org.springframework.jdbc.core.SqlParameter("p_author_id", java.sql.Types.NUMERIC),
+                            new org.springframework.jdbc.core.SqlOutParameter("p_success", java.sql.Types.BOOLEAN));
 
             MapSqlParameterSource params = new MapSqlParameterSource()
-                    .addValue("p_author_id", id);
+                    .addValue("p_author_id", id)
+                    .addValue("p_success", null);
 
-            jdbcCall.execute(params);
-            return true;
+            Map<String, Object> result = jdbcCall.execute(params);
+            // Convert INTEGER (1/0) to Boolean (true/false)
+            Number successNum = (Number) result.get("p_success");
+            return successNum != null && successNum.intValue() == 1;
         } catch (Exception e) {
             log.error("Error deleting author with ID: {}", id, e);
             return false;
@@ -154,14 +150,14 @@ public class AuthorRepositoryImpl implements AuthorRepository {
 
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("AUTHOR_PKG")
-                .withProcedureName("GET_AUTHORS_BY_LAST_NAME")
-                .returningResultSet("authors", AUTHOR_ROW_MAPPER);
+                .withProcedureName("FIND_AUTHORS_BY_LAST_NAME")
+                .returningResultSet("p_authors", AUTHOR_ROW_MAPPER);
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("p_last_name", lastName);
 
         Map<String, Object> result = jdbcCall.execute(params);
-        List<Author> authors = (List<Author>) result.get("authors");
+        List<Author> authors = (List<Author>) result.get("p_authors");
         return authors != null ? authors : List.of();
     }
 
@@ -177,14 +173,14 @@ public class AuthorRepositoryImpl implements AuthorRepository {
 
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("AUTHOR_PKG")
-                .withProcedureName("GET_AUTHORS_BY_BOOK_GENRE")
-                .returningResultSet("authors", AUTHOR_ROW_MAPPER);
+                .withProcedureName("FIND_AUTHORS_BY_BOOK_GENRE")
+                .returningResultSet("p_authors", AUTHOR_ROW_MAPPER);
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("p_genre", genre);
 
         Map<String, Object> result = jdbcCall.execute(params);
-        List<Author> authors = (List<Author>) result.get("authors");
+        List<Author> authors = (List<Author>) result.get("p_authors");
         return authors != null ? authors : List.of();
     }
 
@@ -194,14 +190,14 @@ public class AuthorRepositoryImpl implements AuthorRepository {
 
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("AUTHOR_PKG")
-                .withProcedureName("GET_AUTHORS_BY_BOOK_ID")
-                .returningResultSet("authors", AUTHOR_ROW_MAPPER);
+                .withProcedureName("FIND_AUTHORS_BY_BOOK_ID")
+                .returningResultSet("p_authors", AUTHOR_ROW_MAPPER);
 
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("p_book_id", bookId);
 
         Map<String, Object> result = jdbcCall.execute(params);
-        List<Author> authors = (List<Author>) result.get("authors");
+        List<Author> authors = (List<Author>) result.get("p_authors");
         return authors != null ? authors : List.of();
     }
 }
