@@ -1,5 +1,7 @@
 package com.books.infrastructure.repository;
 
+import java.util.Collections;
+
 import com.books.domain.model.Author;
 import com.books.domain.model.Book;
 import com.books.domain.repository.BookRepository;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,6 +51,15 @@ public class BookRepositoryImpl implements BookRepository {
                 .publisher(rs.getString("PUBLISHER"))
                 .genre(rs.getString("GENRE"))
                 .summary(rs.getString("SUMMARY"))
+                .authors(new HashSet<>(Collections.singleton(Author.builder()
+                        .authorId(rs.getLong("AUTHOR_ID"))
+                        .firstName(rs.getString("AUTHOR_FIRST_NAME"))
+                        .lastName(rs.getString("AUTHOR_LAST_NAME"))
+                        .birthDate(
+                                rs.getDate("AUTHOR_BIRTH_DATE") != null ? rs.getDate("AUTHOR_BIRTH_DATE").toLocalDate()
+                                        : null)
+                        .biography(rs.getString("AUTHOR_BIOGRAPHY"))
+                        .build())))
                 .build();
     }
 
@@ -160,9 +172,7 @@ public class BookRepositoryImpl implements BookRepository {
 
             Number successNum = (Number) result.get("p_success");
             return successNum != null && successNum.intValue() == 1;
-        } catch (
-
-        Exception e) {
+        } catch (Exception e) {
             log.error("Error deleting author with ID: {}", id, e);
             return false;
         }
