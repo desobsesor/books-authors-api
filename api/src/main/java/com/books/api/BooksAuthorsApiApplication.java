@@ -5,11 +5,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import io.github.cdimascio.dotenv.Dotenv;
 
 /**
  * Main application class for the Books and Authors API.
  * Configures component scanning, entity scanning, and repository scanning
  * across all modules of the application.
+ * Loads environment variables from .env file before starting the application.
  *
  * @author books
  */
@@ -21,10 +23,12 @@ public class BooksAuthorsApiApplication {
 
     /**
      * Main method that starts the Spring Boot application.
+     * Loads environment variables from .env file before starting.
      *
      * @param args command line arguments
      */
     public static void main(String[] args) {
+        Dotenv.configure().load(); // Cargar variables de entorno desde .env
         SpringApplication.run(BooksAuthorsApiApplication.class, args);
     }
 }
