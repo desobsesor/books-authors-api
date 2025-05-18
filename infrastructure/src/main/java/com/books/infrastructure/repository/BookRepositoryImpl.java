@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
@@ -141,17 +142,30 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public boolean deleteById(Long id) {
-        // Call PL/SQL procedure: BOOK_PKG.DELETE_BOOK
-        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withCatalogName("BOOK_PKG")
-                .withProcedureName("DELETE_BOOK");
+        log.debug("Deleting book with ID: {}", id);
+        try {
+            // Call PL/SQL procedure: BOOK_PKG.DELETE_BOOK
+            SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                    .withCatalogName("BOOK_PKG")
+                    .withProcedureName("DELETE_BOOK")
+                    .declareParameters(
+                            new org.springframework.jdbc.core.SqlParameter("p_book_id", java.sql.Types.NUMERIC),
+                            new org.springframework.jdbc.core.SqlOutParameter("p_success", java.sql.Types.BOOLEAN));
 
-        Map<String, Object> inParams = new HashMap<>();
-        inParams.put("P_BOOK_ID", id);
-        inParams.put("P_SUCCESS", false);
+            MapSqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("p_book_id", id)
+                    .addValue("p_success", null);
 
-        Map<String, Object> result = jdbcCall.execute(inParams);
-        return (Boolean) result.get("P_SUCCESS");
+            Map<String, Object> result = jdbcCall.execute(params);
+
+            Number successNum = (Number) result.get("p_success");
+            return successNum != null && successNum.intValue() == 1;
+        } catch (
+
+        Exception e) {
+            log.error("Error deleting author with ID: {}", id, e);
+            return false;
+        }
     }
 
     @Override
