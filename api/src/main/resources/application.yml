@@ -34,6 +34,11 @@ springdoc:
     tagsSorter: alpha
   packages-to-scan: com.books.api.controller
 
+# Security configuration
+security:
+  secret-key: mySecretKeyQWRtaW5Jc3N1ZXJKYXZhSW5Vc2VTZmxLeHdSSlNNZUtLRjJRVDRmd3BNZUPMZTI2UE9rNnlKVl9hZFFzc3c1Yw==
+  expiration: 86400000
+
 # Logging configuration
 logging:
   level:
