@@ -77,7 +77,7 @@ CREATE OR REPLACE PACKAGE AUTHOR_PKG AS
 END AUTHOR_PKG;
 /
 
-CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
+create or replace NONEDITIONABLE PACKAGE BODY AUTHOR_PKG AS
     -- Get all authors
     PROCEDURE GET_ALL_AUTHORS(
         p_authors OUT SYS_REFCURSOR
@@ -88,7 +88,7 @@ CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
         FROM authors a
         ORDER BY a.last_name, a.first_name;
     END GET_ALL_AUTHORS;
-    
+
     -- Get author by ID
     PROCEDURE GET_AUTHOR_BY_ID(
         p_author_id IN NUMBER,
@@ -100,7 +100,7 @@ CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
         FROM authors a
         WHERE a.author_id = p_author_id;
     END GET_AUTHOR_BY_ID;
-    
+
     -- Save (create or update) an author
     PROCEDURE SAVE_AUTHOR(
         p_author_id IN OUT NUMBER,
@@ -113,7 +113,7 @@ CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
         IF p_author_id IS NULL THEN
             -- Create new author
             SELECT author_seq.NEXTVAL INTO p_author_id FROM DUAL;
-            
+
             INSERT INTO authors (author_id, first_name, last_name, birth_date, biography)
             VALUES (p_author_id, p_first_name, p_last_name, p_birth_date, p_biography);
         ELSE
@@ -125,14 +125,14 @@ CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
                 biography = p_biography
             WHERE author_id = p_author_id;
         END IF;
-        
+
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
             RAISE;
     END SAVE_AUTHOR;
-    
+
     -- Delete an author
     PROCEDURE DELETE_AUTHOR(
         p_author_id IN NUMBER,
@@ -141,7 +141,7 @@ CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
         v_count NUMBER;
     BEGIN
         SELECT COUNT(*) INTO v_count FROM authors WHERE author_id = p_author_id;
-        
+
         IF v_count > 0 THEN
             DELETE FROM authors WHERE author_id = p_author_id;
             p_success := TRUE;
@@ -155,7 +155,7 @@ CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
             p_success := FALSE;
             RAISE;
     END DELETE_AUTHOR;
-    
+
     -- Find authors by last name
     PROCEDURE FIND_AUTHORS_BY_LAST_NAME(
         p_last_name IN VARCHAR2,
@@ -168,7 +168,7 @@ CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
         WHERE UPPER(a.last_name) LIKE UPPER(p_last_name)
         ORDER BY a.last_name, a.first_name;
     END FIND_AUTHORS_BY_LAST_NAME;
-    
+
     -- Find authors by book genre
     PROCEDURE FIND_AUTHORS_BY_BOOK_GENRE(
         p_genre IN VARCHAR2,
@@ -191,11 +191,11 @@ CREATE OR REPLACE PACKAGE BODY AUTHOR_PKG AS
     ) IS
     BEGIN
         OPEN p_authors FOR
-        SELECT DISTINCT a.author_id, a.first_name, a.last_name, a.birth_date, a.biography
+        SELECT a.author_id, a.first_name, a.last_name, a.birth_date, a.biography
         FROM authors a
         JOIN book_authors ba ON a.author_id = ba.author_id
-        JOIN books b ON ba.book_id = b.book_id
-        WHERE b.p_book_id = p_book_id
+        JOIN books b ON b.book_id = ba.book_id
+        WHERE b.book_id = p_book_id
         ORDER BY a.last_name, a.first_name;
     END FIND_AUTHORS_BY_BOOK_ID;
 END AUTHOR_PKG;
@@ -264,18 +264,35 @@ CREATE OR REPLACE PACKAGE BOOK_PKG AS
 END BOOK_PKG;
 /
 
-CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
+create or replace NONEDITIONABLE PACKAGE BODY BOOK_PKG AS
     -- Get all books
     PROCEDURE GET_ALL_BOOKS(
         p_books OUT SYS_REFCURSOR
     ) IS
     BEGIN
         OPEN p_books FOR
-        SELECT b.book_id, b.title, b.isbn, b.publication_date, b.publisher, b.genre, b.summary
-        FROM books b
+        SELECT 
+            b.book_id,
+            b.title,
+            b.isbn,
+            b.publication_date,
+            b.publisher,
+            b.genre,
+            b.summary,
+            a.author_id  AS author_id,
+            a.first_name AS author_first_name,
+            a.last_name AS author_last_name,
+            a.birth_date AS author_birth_date,
+            a.biography AS author_biography
+        FROM 
+            books b
+        JOIN 
+            book_authors ba ON b.book_id = ba.book_id
+        JOIN 
+            authors a ON ba.author_id = a.author_id
         ORDER BY b.title;
     END GET_ALL_BOOKS;
-    
+
     -- Get book by ID
     PROCEDURE GET_BOOK_BY_ID(
         p_book_id IN NUMBER,
@@ -283,11 +300,28 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
     ) IS
     BEGIN
         OPEN p_book FOR
-        SELECT b.book_id, b.title, b.isbn, b.publication_date, b.publisher, b.genre, b.summary
-        FROM books b
+        SELECT 
+            b.book_id,
+            b.title,
+            b.isbn,
+            b.publication_date,
+            b.publisher,
+            b.genre,
+            b.summary,
+            a.author_id  AS author_id,
+            a.first_name AS author_first_name,
+            a.last_name AS author_last_name,
+            a.birth_date AS author_birth_date,
+            a.biography AS author_biography
+        FROM 
+            books b
+        JOIN 
+            book_authors ba ON b.book_id = ba.book_id
+        JOIN 
+            authors a ON ba.author_id = a.author_id
         WHERE b.book_id = p_book_id;
     END GET_BOOK_BY_ID;
-    
+
     -- Save (create or update) a book
     PROCEDURE SAVE_BOOK(
         p_book_id IN OUT NUMBER,
@@ -302,7 +336,7 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
         IF p_book_id IS NULL THEN
             -- Create new book
             SELECT book_seq.NEXTVAL INTO p_book_id FROM DUAL;
-            
+
             INSERT INTO books (book_id, title, isbn, publication_date, publisher, genre, summary)
             VALUES (p_book_id, p_title, p_isbn, p_publication_date, p_publisher, p_genre, p_summary);
         ELSE
@@ -316,14 +350,14 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
                 summary = p_summary
             WHERE book_id = p_book_id;
         END IF;
-        
+
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
             RAISE;
     END SAVE_BOOK;
-    
+
     -- Delete a book
     PROCEDURE DELETE_BOOK(
         p_book_id IN NUMBER,
@@ -332,7 +366,7 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
         v_count NUMBER;
     BEGIN
         SELECT COUNT(*) INTO v_count FROM books WHERE book_id = p_book_id;
-        
+
         IF v_count > 0 THEN
             DELETE FROM books WHERE book_id = p_book_id;
             p_success := TRUE;
@@ -346,7 +380,7 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
             p_success := FALSE;
             RAISE;
     END DELETE_BOOK;
-    
+
     -- Link book and author
     PROCEDURE LINK_BOOK_AUTHOR(
         p_book_id IN NUMBER,
@@ -358,7 +392,7 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
         SELECT COUNT(*) INTO v_count 
         FROM book_authors 
         WHERE book_id = p_book_id AND author_id = p_author_id;
-        
+
         IF v_count = 0 THEN
             INSERT INTO book_authors (book_id, author_id)
             VALUES (p_book_id, p_author_id);
@@ -369,7 +403,7 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
             ROLLBACK;
             RAISE;
     END LINK_BOOK_AUTHOR;
-    
+
     -- Find books by title
     PROCEDURE FIND_BOOKS_BY_TITLE(
         p_title IN VARCHAR2,
@@ -377,12 +411,29 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
     ) IS
     BEGIN
         OPEN p_books FOR
-        SELECT b.book_id, b.title, b.isbn, b.publication_date, b.publisher, b.genre, b.summary
-        FROM books b
+        SELECT 
+            b.book_id,
+            b.title,
+            b.isbn,
+            b.publication_date,
+            b.publisher,
+            b.genre,
+            b.summary,
+            a.author_id  AS author_id,
+            a.first_name AS author_first_name,
+            a.last_name AS author_last_name,
+            a.birth_date AS author_birth_date,
+            a.biography AS author_biography
+        FROM 
+            books b
+        JOIN 
+            book_authors ba ON b.book_id = ba.book_id
+        JOIN 
+            authors a ON ba.author_id = a.author_id
         WHERE UPPER(b.title) LIKE UPPER(p_title)
         ORDER BY b.title;
     END FIND_BOOKS_BY_TITLE;
-    
+
     -- Find books by genre
     PROCEDURE FIND_BOOKS_BY_GENRE(
         p_genre IN VARCHAR2,
@@ -390,12 +441,29 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
     ) IS
     BEGIN
         OPEN p_books FOR
-        SELECT b.book_id, b.title, b.isbn, b.publication_date, b.publisher, b.genre, b.summary
-        FROM books b
+        SELECT 
+            b.book_id,
+            b.title,
+            b.isbn,
+            b.publication_date,
+            b.publisher,
+            b.genre,
+            b.summary,
+            a.author_id  AS author_id,
+            a.first_name AS author_first_name,
+            a.last_name AS author_last_name,
+            a.birth_date AS author_birth_date,
+            a.biography AS author_biography
+        FROM 
+            books b
+        JOIN 
+            book_authors ba ON b.book_id = ba.book_id
+        JOIN 
+            authors a ON ba.author_id = a.author_id
         WHERE UPPER(b.genre) = UPPER(p_genre)
         ORDER BY b.title;
     END FIND_BOOKS_BY_GENRE;
-    
+
     -- Find books by author
     PROCEDURE FIND_BOOKS_BY_AUTHOR(
         p_author_id IN NUMBER,
@@ -403,13 +471,30 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
     ) IS
     BEGIN
         OPEN p_books FOR
-        SELECT b.book_id, b.title, b.isbn, b.publication_date, b.publisher, b.genre, b.summary
-        FROM books b
-        JOIN book_authors ba ON b.book_id = ba.book_id
-        WHERE ba.author_id = p_author_id
-        ORDER BY b.title;
+        SELECT 
+            b.book_id,
+            b.title,
+            b.isbn,
+            b.publication_date,
+            b.publisher,
+            b.genre,
+            b.summary,
+            a.author_id  AS author_id,
+            a.first_name AS author_first_name,
+            a.last_name AS author_last_name,
+            a.birth_date AS author_birth_date,
+            a.biography AS author_biography
+        FROM 
+            books b
+        JOIN 
+            book_authors ba ON b.book_id = ba.book_id
+        JOIN 
+            authors a ON ba.author_id = a.author_id
+        WHERE a.author_id = p_author_id
+        ORDER BY 
+            b.title, a.last_name;
     END FIND_BOOKS_BY_AUTHOR;
-    
+
     -- Find books by year range
     PROCEDURE FIND_BOOKS_BY_YEAR_RANGE(
         p_start_year IN NUMBER,
@@ -418,8 +503,25 @@ CREATE OR REPLACE PACKAGE BODY BOOK_PKG AS
     ) IS
     BEGIN
         OPEN p_books FOR
-        SELECT b.book_id, b.title, b.isbn, b.publication_date, b.publisher, b.genre, b.summary
-        FROM books b
+        SELECT 
+            b.book_id,
+            b.title,
+            b.isbn,
+            b.publication_date,
+            b.publisher,
+            b.genre,
+            b.summary,
+            a.author_id  AS author_id,
+            a.first_name AS author_first_name,
+            a.last_name AS author_last_name,
+            a.birth_date AS author_birth_date,
+            a.biography AS author_biography
+        FROM 
+            books b
+        JOIN 
+            book_authors ba ON b.book_id = ba.book_id
+        JOIN 
+            authors a ON ba.author_id = a.author_id
         WHERE EXTRACT(YEAR FROM b.publication_date) BETWEEN p_start_year AND p_end_year
         ORDER BY b.publication_date;
     END FIND_BOOKS_BY_YEAR_RANGE;

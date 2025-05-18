@@ -10,9 +10,9 @@ spring:
   
   # Database configuration
   datasource:
-    url: jdbc:oracle:thin:@localhost:1521:XE
-    username: Maya
-    password: Maya
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: oracle.jdbc.OracleDriver
   
   # JPA configuration
@@ -36,8 +36,8 @@ springdoc:
 
 # Security configuration
 security:
-  secret-key: mySecretKeyQWRtaW5Jc3N1ZXJKYXZhSW5Vc2VTZmxLeHdSSlNNZUtLRjJRVDRmd3BNZUPMZTI2UE9rNnlKVl9hZFFzc3c1Yw==
-  expiration: 86400000
+  secret-key: ${JWT_SECRET_KEY}
+  expiration: ${JWT_EXPIRATION}
 
 # Logging configuration
 logging:
