@@ -9,10 +9,14 @@ A RESTful API for managing books and authors with a PL/SQL backend.</p>
   <a href="https://www.java.com" target="_blank"><img src="https://img.shields.io/badge/Java-17-ED8B00?style=flat&logo=java&logoColor=white" alt="Java"></a>
   <a href="https://spring.io/" target="_blank"><img src="https://img.shields.io/badge/Spring_Boot-3.2.0-6DB33F?style=flat&logo=spring&logoColor=white" alt="Spring Boot"></a>
   <a href="https://maven.apache.org/" target="_blank"><img src="https://img.shields.io/badge/Maven-3.8-C71A36?style=flat&logo=apache-maven&logoColor=white" alt="Maven"></a>
-  <a href="https://site.mockito.org" target="_blank"><img src="https://img.shields.io/badge/Mockito-5.0-83B81A?style=flat&logo=java&logoColor=white" alt="Mockito"></a>
+  <a href="https://site.mockito.org" target="_blank"><img src="https://img.shields.io/badge/Mockito-5.7.0-83B81A?style=flat&logo=java&logoColor=white" alt="Mockito"></a>
   <a href="https://www.oracle.com/database/" target="_blank"><img src="https://img.shields.io/badge/Oracle-Database-%23F80000?style=flat&logo=oracle&logoColor=white" alt="Oracle Database"></a>
-  <a href="https://springdoc.org/" target="_blank"><img src="https://img.shields.io/badge/OpenAPI-3.0-%2385EA2D?style=flat&logo=swagger&logoColor=white" alt="OpenAPI"></a>
+  <a href="https://springdoc.org/" target="_blank"><img src="https://img.shields.io/badge/OpenAPI-2.2.0-%2385EA2D?style=flat&logo=swagger&logoColor=white" alt="OpenAPI"></a>
   <a href="https://www.docker.com/" target="_blank"><img src="https://img.shields.io/badge/Docker-Containerized-%232496ED?style=flat&logo=docker&logoColor=white" alt="Docker"></a>
+  <a href="https://projectlombok.org/" target="_blank"><img src="https://img.shields.io/badge/Lombok-1.18.30-%230096D6?style=flat&logo=java&logoColor=white" alt="Lombok"></a>
+  <a href="https://mapstruct.org/" target="_blank"><img src="https://img.shields.io/badge/MapStruct-1.5.5.Final-%230096D6?style=flat&logo=java&logoColor=white" alt="MapStruct"></a>
+  <a href="https://mapstruct.org/" target="_blank"><img src="https://img.shields.io/badge/MapStruct-1.5.5.Final-%230096D6?style=flat&logo=java&logoColor=white" alt="MapStruct"></a>
+  <a href="https://junit.org/junit5/" target="_blank"><img src="https://img.shields.io/badge/JUnit-5.10.1-%2325A162?style=flat&logo=java&logoColor=white" alt="JUnit"></a>
 </p>
 
 ## Project Architecture
@@ -30,9 +34,10 @@ This project follows a clean hexagonal architecture with the following modules:
 - Spring Boot 3.2.0
 - Maven (multi-module project)
 - Oracle Database with PL/SQL
-- OpenAPI for API documentation
-- JUnit 5 and Mockito for testing
+- OpenAPI 2.2.0 for API documentation
+- JUnit 5.10.1 and Mockito 5.7.0 for testing
 - Docker and Docker Compose for containerization
+- MapStruct 1.5.5.Final for object mapping
 
 ## Getting Started
 
@@ -170,6 +175,22 @@ To run the tests:
 ```bash
 mvn test
 ```
+To run coverage:
+
+```bash
+mvn clean test jacoco:report
+```
+
+## Coverage Visualization
+
+To generate and view code coverage reports, run the following script:
+
+```bash
+generate-dashboard.bat
+```
+This will generate an HTML file in the root of the directory, a file called `test-dashboard.html`, which you can open in your browser to see detailed code coverage results.
+
+
 
 ## Author ✒️
 
