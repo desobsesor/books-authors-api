@@ -1,5 +1,6 @@
 package com.books.api.controller;
 
+import com.books.api.security.JwtTokenProvider;
 import com.books.application.dto.AuthorDTO;
 import com.books.application.dto.CreateAuthorDTO;
 import com.books.application.dto.UpdateAuthorDTO;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +30,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/authors")
+@SecurityRequirement(name = "bearer-key")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "authors", description = "API for managing authors")
 public class AuthorController {
 
         private final AuthorService authorService;
+        private final JwtTokenProvider jwtTokenProvider;
 
         /**
          * Gets all authors.
@@ -49,6 +53,13 @@ public class AuthorController {
                 log.debug("REST request to get all authors");
                 List<AuthorDTO> authors = authorService.getAllAuthors();
                 return ResponseEntity.ok(authors);
+        }
+
+        @PostMapping("/generate-token")
+        @Operation(summary = "Generate JWT token", description = "Generates a valid JWT token for testing purposes")
+        @ApiResponse(responseCode = "200", description = "Token generated successfully")
+        public ResponseEntity<String> generateToken() {
+                return ResponseEntity.ok(jwtTokenProvider.createToken());
         }
 
         /**
