@@ -31,6 +31,9 @@ public class Book {
     @Builder.Default
     private Set<Author> authors = new HashSet<>();
 
+    @Builder.Default
+    private Set<Long> authorIds = new HashSet<>();
+
     /**
      * Adds an author to the book's collection of authors.
      *

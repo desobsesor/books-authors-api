@@ -78,31 +78,6 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 return new HashSet<>();
             }
         }
-
-        /*
-         * @Override
-         * public Author mapRow(ResultSet rs, int rowNum) throws SQLException {
-         * return Author.builder()
-         * .authorId(rs.getLong("author_id"))
-         * .firstName(rs.getString("first_name"))
-         * .lastName(rs.getString("last_name"))
-         * .birthDate(rs.getDate("birth_date") != null ?
-         * rs.getDate("birth_date").toLocalDate() : null)
-         * .biography(rs.getString("biography"))
-         * .books(new ArrayList<>(Collections.singletonList(Book.builder()
-         * .bookId(rs.getLong("book_id"))
-         * .title(rs.getString("title"))
-         * .isbn(rs.getString("isbn"))
-         * .publicationDate(rs.getDate("publication_date") != null
-         * ? rs.getDate("publication_date").toLocalDate()
-         * : null)
-         * .publisher(rs.getString("publisher"))
-         * .genre(rs.getString("genre"))
-         * .summary(rs.getString("summary"))
-         * .build())))
-         * .build();
-         * }
-         */
     };
 
     @Override
@@ -195,9 +170,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                     .addValue("p_success", null);
 
             Map<String, Object> result = jdbcCall.execute(params);
-            // Convert INTEGER (1/0) to Boolean (true/false)
-            Number successNum = (Number) result.get("p_success");
-            return successNum != null && successNum.intValue() == 1;
+            return Boolean.parseBoolean(result.get("p_success").toString());
         } catch (Exception e) {
             log.error("Error deleting author with ID: {}", id, e);
             return false;
@@ -207,7 +180,6 @@ public class AuthorRepositoryImpl implements AuthorRepository {
     @Override
     public List<Author> findByLastName(String lastName) {
         log.debug("Finding authors with last name: {}", lastName);
-
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("AUTHOR_PKG")
                 .withProcedureName("FIND_AUTHORS_BY_LAST_NAME")
