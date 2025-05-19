@@ -48,7 +48,6 @@ public class BookControllerTest {
     private Book book1;
     private Book book2;
     private BookDTO bookDTO1;
-    private BookDTO bookDTO2;
     private CreateBookDTO createBook1;
 
     /**
@@ -80,14 +79,6 @@ public class BookControllerTest {
 
         Set<Long> authorIds2 = new HashSet<>();
         authorIds2.add(2L);
-
-        bookDTO2 = BookDTO.builder()
-                .bookId(2L)
-                .title("El Aleph")
-                .isbn("9788437604848")
-                .publicationDate(LocalDate.of(1949, 6, 15))
-                .authorIds(authorIds2)
-                .build();
 
         // Create test data for Book
         book1 = new Book();

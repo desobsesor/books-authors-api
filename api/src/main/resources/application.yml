@@ -49,6 +49,33 @@ security:
   secret-key: ${JWT_SECRET_KEY}
   expiration: ${JWT_EXPIRATION}
 
+# Rate Limiting configuration
+rate-limiting:
+  enabled: true
+  # Default rate limit for all endpoints
+  default:
+    limit: 100
+    refresh-period: 60
+    time-unit: SECONDS
+  # Specific endpoint rate limits
+  endpoints:
+    - pattern: /api/books
+      limit: 50
+      refresh-period: 60
+      time-unit: SECONDS
+    - pattern: /api/authors
+      limit: 50
+      refresh-period: 60
+      time-unit: SECONDS
+    - pattern: /api/authors/generate-token
+      limit: 10
+      refresh-period: 60
+      time-unit: SECONDS
+  # Strategy: IP_ADDRESS, USER, TOKEN
+  strategy: IP_ADDRESS
+  # Response headers
+  response-headers: true
+
 # Logging configuration
 logging:
   level:
