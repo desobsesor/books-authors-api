@@ -137,6 +137,10 @@
                                     <element>CLASS</element>
                                     <includes>
                                         <include>com.books.api.controller.*Controller</include>
+                                        <include>com.books.api.security.*Filter</include>
+                                        <include>com.books.api.security.*Provider</include>
+                                        <include>com.books.api.service.*Service</include>
+                                        <include>com.books.api.config.*Config</include>
                                     </includes>
                                     <limits>
                                         <limit>
