@@ -1,7 +1,6 @@
 package com.books.api.controller;
 
 import com.books.application.dto.BookDTO;
-import com.books.application.dto.CreateAuthorDTO;
 import com.books.application.dto.CreateBookDTO;
 import com.books.application.dto.UpdateBookDTO;
 import com.books.application.service.BookService;
@@ -29,7 +28,7 @@ import java.util.List;
  * @author books
  */
 @RestController
-@RequestMapping("/api/books")
+@RequestMapping("${CONTEXT_PATH}/books")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Books", description = "Book management API")
