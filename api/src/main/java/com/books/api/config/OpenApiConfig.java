@@ -33,6 +33,24 @@ public class OpenApiConfig {
         @Value("${server.servlet.context-path:}")
         private String contextPath;
 
+        @Value("${swagger.title}")
+        private String swaggerTitle;
+
+        @Value("${swagger.description}")
+        private String swaggerDescription;
+
+        @Value("${swagger.version}")
+        private String swaggerVersion;
+
+        @Value("${swagger.contact.name}")
+        private String contactName;
+
+        @Value("${swagger.contact.url}")
+        private String contactUrl;
+
+        @Value("${swagger.contact.email}")
+        private String contactEmail;
+
         /**
          * Creates and configures the OpenAPI bean for API documentation.
          * Includes detailed information, development and production servers,
@@ -70,17 +88,13 @@ public class OpenApiConfig {
                                                                                 .description("Enter the JWT token with Bearer prefix: Bearer <token>")))
                                 .security(Arrays.asList(new SecurityRequirement().addList(securitySchemeName)))
                                 .info(new Info()
-                                                .title("Books and Authors API")
-                                                .description("RESTful API for managing books and authors with a PL/SQL backend. "
-                                                                +
-                                                                "This API provides endpoints to create, read, update and delete books and authors, "
-                                                                +
-                                                                "as well as managing the relationships between them.")
-                                                .version("1.0.0")
+                                                .title(swaggerTitle)
+                                                .description(swaggerDescription)
+                                                .version(swaggerVersion)
                                                 .contact(new Contact()
-                                                                .name("API Support")
-                                                                .url("https://books.com/support")
-                                                                .email("support@books.com"))
+                                                                .name(contactName)
+                                                                .url(contactUrl)
+                                                                .email(contactEmail))
                                                 .license(new License()
                                                                 .name("Apache 2.0")
                                                                 .url("https://www.apache.org/licenses/LICENSE-2.0.html")));

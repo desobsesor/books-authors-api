@@ -28,7 +28,13 @@ public class BooksAuthorsApiApplication {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        Dotenv.configure().load(); // Cargar variables de entorno desde .env
+        // Load environment variables from .env file and add them to system properties
+        Dotenv dotenv = Dotenv.configure()
+                .ignoreIfMissing()
+                .systemProperties() // This is crucial - adds env vars to System properties
+                .load();
+
+        // Now Spring can access the environment variables
         SpringApplication.run(BooksAuthorsApiApplication.class, args);
     }
 }
