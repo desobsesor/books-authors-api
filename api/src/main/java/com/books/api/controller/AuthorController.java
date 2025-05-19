@@ -29,7 +29,7 @@ import java.util.List;
  * @author books
  */
 @RestController
-@RequestMapping("/api/authors")
+@RequestMapping("${CONTEXT_PATH}/authors")
 @SecurityRequirement(name = "bearer-key")
 @RequiredArgsConstructor
 @Slf4j

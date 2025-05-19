@@ -1,6 +1,6 @@
 # Books and Authors API
 <p align="center">
-  <img src="api/src/main/resources/images/logo-min.png" alt="Database Schema" width="800"/>
+  <img src="api/src/main/resources/images/logo-min.png" alt="Logo" width="800"/>
 </p>
   <p align="center">
   
@@ -168,6 +168,31 @@ docker-compose restart
   - User: Maya
   - Password: Maya
 
+## Environment Variables
+
+The application uses environment variables for configuration. A `.env.example` file is provided as a template with the required environment variables:
+
+```properties
+# Database Configuration
+DATABASE_URL=jdbc:oracle:thin:@localhost:1521:XE
+DB_USERNAME=Maya
+DB_PASSWORD=Maya
+
+# JWT Configuration
+JWT_SECRET=your-jwt-secret-key
+JWT_EXPIRATION_MS=86400000
+
+# Server Configuration
+CONTEXT_PATH=/api/v1
+
+```
+
+To set up your environment:
+
+1. Copy `.env.example` to `.env`
+2. Update the values in `.env` according to your environment
+3. The application will automatically load these variables on startup
+
 ## Testing
 
 To run the tests:
@@ -190,6 +215,9 @@ generate-dashboard.bat
 ```
 This will generate an HTML file in the root of the directory, a file called `test-dashboard.html`, which you can open in your browser to see detailed code coverage results.
 
+<p align="center">
+  <img src="api/src/main/resources/images/dashboard-coverage-min.png" alt="Code Coverage Dashboard" width="800"/>
+</p>
 
 
 ## Author ✒️
