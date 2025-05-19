@@ -56,12 +56,10 @@ public interface AuthorMapper {
      * @param author the Author entity from which to extract book IDs
      * @return a set of book IDs
      */
-    default Set<Long> mapBookBookIdsFromAuthor(Author author) {
+    default Set<Book> mapBookBookIdsFromAuthor(Author author) {
         if (author.getBooks() == null) {
             return Set.of();
         }
-        return author.getBooks().stream()
-                .map(Book::getBookId)
-                .collect(Collectors.toSet());
+        return author.getBooks();
     }
 }
