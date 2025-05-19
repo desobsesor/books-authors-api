@@ -35,3 +35,6 @@ Thumbs.db
 *.env.testing
 
 /api/.env
+.mvn
+mvnw.cmd
+mvnw

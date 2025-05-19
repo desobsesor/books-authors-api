@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.books.domain.model.Book;
+
 /**
  * DTO (Data Transfer Object) for the Author entity.
  * Used to transfer author data between the application layer and the
@@ -37,5 +39,5 @@ public class AuthorDTO {
      * A Set is used to avoid duplicates.
      */
     @Builder.Default
-    private Set<Long> bookBookIds = new HashSet<>();
+    private Set<Book> bookBookIds = new HashSet<>();
 }

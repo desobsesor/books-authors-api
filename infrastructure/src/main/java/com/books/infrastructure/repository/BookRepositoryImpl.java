@@ -1,25 +1,25 @@
 package com.books.infrastructure.repository;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collections;
-
-import com.books.domain.model.Author;
-import com.books.domain.model.Book;
-import com.books.domain.repository.BookRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.books.domain.model.Author;
+import com.books.domain.model.Book;
+import com.books.domain.repository.BookRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of the BookRepository interface using PL/SQL procedures.
@@ -65,7 +65,6 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public List<Book> findAll() {
-        // Call PL/SQL procedure: BOOK_PKG.GET_ALL_BOOKS
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("GET_ALL_BOOKS")
@@ -84,7 +83,6 @@ public class BookRepositoryImpl implements BookRepository {
     @Override
     public Optional<Book> findById(Long id) {
         try {
-            // Call PL/SQL procedure: BOOK_PKG.GET_BOOK_BY_ID
             SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     .withCatalogName("BOOK_PKG")
                     .withProcedureName("GET_BOOK_BY_ID")
@@ -105,7 +103,6 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public Book save(Book book) {
-        // Call PL/SQL procedure: BOOK_PKG.SAVE_BOOK
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("SAVE_BOOK");
@@ -120,13 +117,13 @@ public class BookRepositoryImpl implements BookRepository {
         inParams.put("P_SUMMARY", book.getSummary());
 
         Map<String, Object> result = jdbcCall.execute(inParams);
-        Long bookId = (Long) result.get("P_BOOK_ID");
+        Long bookId = ((Number) result.get("P_BOOK_ID")).longValue();
         book.setBookId(bookId);
 
-        // Save book-author relationships if authors exist
-        if (!book.getAuthors().isEmpty()) {
-            for (Author author : book.getAuthors()) {
-                saveBookAuthorRelationship(book.getBookId(), author.getAuthorId());
+        // Save author-book relationships if authorIds exist
+        if (book.getAuthorIds() != null && !book.getAuthorIds().isEmpty()) {
+            for (Long authorId : book.getAuthorIds()) {
+                saveBookAuthorRelationship(book.getBookId(), authorId);
             }
         }
 
@@ -140,7 +137,6 @@ public class BookRepositoryImpl implements BookRepository {
      * @param authorId the ID of the author
      */
     private void saveBookAuthorRelationship(Long bookId, Long authorId) {
-        // Call PL/SQL procedure: BOOK_PKG.LINK_BOOK_AUTHOR
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("LINK_BOOK_AUTHOR");
@@ -156,7 +152,6 @@ public class BookRepositoryImpl implements BookRepository {
     public boolean deleteById(Long id) {
         log.debug("Deleting book with ID: {}", id);
         try {
-            // Call PL/SQL procedure: BOOK_PKG.DELETE_BOOK
             SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     .withCatalogName("BOOK_PKG")
                     .withProcedureName("DELETE_BOOK")
@@ -169,18 +164,15 @@ public class BookRepositoryImpl implements BookRepository {
                     .addValue("p_success", null);
 
             Map<String, Object> result = jdbcCall.execute(params);
-
-            Number successNum = (Number) result.get("p_success");
-            return successNum != null && successNum.intValue() == 1;
+            return Boolean.parseBoolean(result.get("p_success").toString());
         } catch (Exception e) {
-            log.error("Error deleting author with ID: {}", id, e);
+            log.error("Error deleting book with ID: {}", id, e);
             return false;
         }
     }
 
     @Override
     public List<Book> findByTitleContaining(String title) {
-        // Call PL/SQL procedure: BOOK_PKG.FIND_BOOKS_BY_TITLE
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_TITLE")
@@ -195,7 +187,6 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public List<Book> findByGenre(String genre) {
-        // Call PL/SQL procedure: BOOK_PKG.FIND_BOOKS_BY_GENRE
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_GENRE")
@@ -225,7 +216,6 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public List<Book> findByPublicationYearBetween(int startYear, int endYear) {
-        // Call PL/SQL procedure: BOOK_PKG.FIND_BOOKS_BY_YEAR_RANGE
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_YEAR_RANGE")

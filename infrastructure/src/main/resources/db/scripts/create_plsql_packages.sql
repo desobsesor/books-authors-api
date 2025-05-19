@@ -84,9 +84,26 @@ create or replace NONEDITIONABLE PACKAGE BODY AUTHOR_PKG AS
     ) IS
     BEGIN
         OPEN p_authors FOR
-        SELECT a.author_id, a.first_name, a.last_name, a.birth_date, a.biography
+        SELECT a.author_id, 
+           a.first_name,
+           a.last_name,
+           a.birth_date,
+           DBMS_LOB.SUBSTR(a.biography, 4000, 1) AS biography,
+           JSON_ARRAYAGG(
+               JSON_OBJECT(
+                   'bookId' VALUE b.book_id,
+                   'title' VALUE b.title,
+                   'isbn' VALUE b.isbn,
+                   'publicationDate' VALUE b.publication_date,
+                   'publisher' VALUE b.publisher,
+                   'genre' VALUE b.genre,
+                   'summary' VALUE b.summary
+               )
+           ) AS books_json
         FROM authors a
-        ORDER BY a.last_name, a.first_name;
+        LEFT JOIN book_authors ba ON a.author_id = ba.author_id
+        LEFT JOIN books b ON ba.book_id = b.book_id
+        GROUP BY a.author_id, a.first_name, a.last_name, a.birth_date, DBMS_LOB.SUBSTR(a.biography, 4000, 1);
     END GET_ALL_AUTHORS;
 
     -- Get author by ID
@@ -96,9 +113,27 @@ create or replace NONEDITIONABLE PACKAGE BODY AUTHOR_PKG AS
     ) IS
     BEGIN
         OPEN p_author FOR
-        SELECT a.author_id, a.first_name, a.last_name, a.birth_date, a.biography
+        SELECT a.author_id, 
+           a.first_name,
+           a.last_name,
+           a.birth_date,
+           DBMS_LOB.SUBSTR(a.biography, 4000, 1) AS biography,
+           JSON_ARRAYAGG(
+               JSON_OBJECT(
+                   'bookId' VALUE b.book_id,
+                   'title' VALUE b.title,
+                   'isbn' VALUE b.isbn,
+                   'publicationDate' VALUE b.publication_date,
+                   'publisher' VALUE b.publisher,
+                   'genre' VALUE b.genre,
+                   'summary' VALUE b.summary
+               )
+           ) AS books_json
         FROM authors a
-        WHERE a.author_id = p_author_id;
+        LEFT JOIN book_authors ba ON a.author_id = ba.author_id
+        LEFT JOIN books b ON ba.book_id = b.book_id
+        WHERE a.author_id = p_author_id
+        GROUP BY a.author_id, a.first_name, a.last_name, a.birth_date, DBMS_LOB.SUBSTR(a.biography, 4000, 1);
     END GET_AUTHOR_BY_ID;
 
     -- Save (create or update) an author
@@ -163,9 +198,27 @@ create or replace NONEDITIONABLE PACKAGE BODY AUTHOR_PKG AS
     ) IS
     BEGIN
         OPEN p_authors FOR
-        SELECT a.author_id, a.first_name, a.last_name, a.birth_date, a.biography
+        SELECT a.author_id, 
+           a.first_name,
+           a.last_name,
+           a.birth_date,
+           DBMS_LOB.SUBSTR(a.biography, 4000, 1) AS biography,
+           JSON_ARRAYAGG(
+               JSON_OBJECT(
+                   'bookId' VALUE b.book_id,
+                   'title' VALUE b.title,
+                   'isbn' VALUE b.isbn,
+                   'publicationDate' VALUE b.publication_date,
+                   'publisher' VALUE b.publisher,
+                   'genre' VALUE b.genre,
+                   'summary' VALUE b.summary
+               )
+           ) AS books_json
         FROM authors a
+        LEFT JOIN book_authors ba ON a.author_id = ba.author_id
+        LEFT JOIN books b ON ba.book_id = b.book_id
         WHERE UPPER(a.last_name) LIKE UPPER(p_last_name)
+        GROUP BY a.author_id, a.first_name, a.last_name, a.birth_date, DBMS_LOB.SUBSTR(a.biography, 4000, 1)
         ORDER BY a.last_name, a.first_name;
     END FIND_AUTHORS_BY_LAST_NAME;
 
@@ -176,11 +229,27 @@ create or replace NONEDITIONABLE PACKAGE BODY AUTHOR_PKG AS
     ) IS
     BEGIN
         OPEN p_authors FOR
-        SELECT DISTINCT a.author_id, a.first_name, a.last_name, a.birth_date, a.biography
+        SELECT a.author_id, 
+           a.first_name,
+           a.last_name,
+           a.birth_date,
+           DBMS_LOB.SUBSTR(a.biography, 4000, 1) AS biography,
+           JSON_ARRAYAGG(
+               JSON_OBJECT(
+                   'bookId' VALUE b.book_id,
+                   'title' VALUE b.title,
+                   'isbn' VALUE b.isbn,
+                   'publicationDate' VALUE b.publication_date,
+                   'publisher' VALUE b.publisher,
+                   'genre' VALUE b.genre,
+                   'summary' VALUE b.summary
+               )
+           ) AS books_json
         FROM authors a
-        JOIN book_authors ba ON a.author_id = ba.author_id
-        JOIN books b ON ba.book_id = b.book_id
+        LEFT JOIN book_authors ba ON a.author_id = ba.author_id
+        LEFT JOIN books b ON ba.book_id = b.book_id
         WHERE UPPER(b.genre) = UPPER(p_genre)
+        GROUP BY a.author_id, a.first_name, a.last_name, a.birth_date, DBMS_LOB.SUBSTR(a.biography, 4000, 1)
         ORDER BY a.last_name, a.first_name;
     END FIND_AUTHORS_BY_BOOK_GENRE;
 
@@ -191,11 +260,27 @@ create or replace NONEDITIONABLE PACKAGE BODY AUTHOR_PKG AS
     ) IS
     BEGIN
         OPEN p_authors FOR
-        SELECT a.author_id, a.first_name, a.last_name, a.birth_date, a.biography
+        SELECT a.author_id, 
+           a.first_name,
+           a.last_name,
+           a.birth_date,
+           DBMS_LOB.SUBSTR(a.biography, 4000, 1) AS biography,
+           JSON_ARRAYAGG(
+               JSON_OBJECT(
+                   'bookId' VALUE b.book_id,
+                   'title' VALUE b.title,
+                   'isbn' VALUE b.isbn,
+                   'publicationDate' VALUE b.publication_date,
+                   'publisher' VALUE b.publisher,
+                   'genre' VALUE b.genre,
+                   'summary' VALUE b.summary
+               )
+           ) AS books_json
         FROM authors a
-        JOIN book_authors ba ON a.author_id = ba.author_id
-        JOIN books b ON b.book_id = ba.book_id
+        LEFT JOIN book_authors ba ON a.author_id = ba.author_id
+        LEFT JOIN books b ON ba.book_id = b.book_id
         WHERE b.book_id = p_book_id
+        GROUP BY a.author_id, a.first_name, a.last_name, a.birth_date, DBMS_LOB.SUBSTR(a.biography, 4000, 1)
         ORDER BY a.last_name, a.first_name;
     END FIND_AUTHORS_BY_BOOK_ID;
 END AUTHOR_PKG;

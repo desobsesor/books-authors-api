@@ -1,21 +1,30 @@
 package com.books.infrastructure.repository;
 
-import com.books.domain.model.Author;
-import com.books.domain.repository.AuthorRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import com.books.domain.model.Author;
+import com.books.domain.model.Book;
+import com.books.domain.repository.AuthorRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementation of the author repository that uses PL/SQL stored procedures.
@@ -43,7 +52,31 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                     .lastName(rs.getString("last_name"))
                     .birthDate(rs.getDate("birth_date") != null ? rs.getDate("birth_date").toLocalDate() : null)
                     .biography(rs.getString("biography"))
+                    .books(rs.getString("books_json") != null
+                            ? parseBooksJson(rs.getString("books_json"))
+                            : new HashSet<>(Collections.singletonList(Book.builder()
+                                    .bookId(rs.getLong("bookId"))
+                                    .title(rs.getString("title"))
+                                    .isbn(rs.getString("isbn"))
+                                    .publicationDate(rs.getString("publicationDate") != null
+                                            ? rs.getDate("publicationDate").toLocalDate()
+                                            : null)
+                                    .publisher(rs.getString("publisher"))
+                                    .genre(rs.getString("genre"))
+                                    .summary(rs.getString("summary"))
+                                    .build())))
                     .build();
+        }
+
+        private Set<Book> parseBooksJson(String json) {
+            try {
+                ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+                return mapper.readValue(json, new TypeReference<HashSet<Book>>() {
+                });
+            } catch (Exception e) {
+                log.error("Error parsing books JSON", e);
+                return new HashSet<>();
+            }
         }
     };
 
@@ -137,9 +170,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                     .addValue("p_success", null);
 
             Map<String, Object> result = jdbcCall.execute(params);
-            // Convert INTEGER (1/0) to Boolean (true/false)
-            Number successNum = (Number) result.get("p_success");
-            return successNum != null && successNum.intValue() == 1;
+            return Boolean.parseBoolean(result.get("p_success").toString());
         } catch (Exception e) {
             log.error("Error deleting author with ID: {}", id, e);
             return false;
@@ -149,7 +180,6 @@ public class AuthorRepositoryImpl implements AuthorRepository {
     @Override
     public List<Author> findByLastName(String lastName) {
         log.debug("Finding authors with last name: {}", lastName);
-
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("AUTHOR_PKG")
                 .withProcedureName("FIND_AUTHORS_BY_LAST_NAME")

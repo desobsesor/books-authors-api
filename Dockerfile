@@ -29,7 +29,7 @@ RUN ./mvnw package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 
 # Metadata
-LABEL maintainer="Developer <dev@example.com>"
+LABEL maintainer="Developer <yovanysuarezsilva@gmail.com>"
 LABEL version="1.0"
 LABEL description="Books and Authors API with Oracle Database"
 
