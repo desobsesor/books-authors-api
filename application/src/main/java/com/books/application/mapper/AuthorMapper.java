@@ -1,14 +1,19 @@
 package com.books.application.mapper;
 
+import java.util.Set;
+
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+
 import com.books.application.dto.AuthorDTO;
 import com.books.application.dto.CreateAuthorDTO;
 import com.books.application.dto.UpdateAuthorDTO;
 import com.books.domain.model.Author;
 import com.books.domain.model.Book;
-import org.mapstruct.*;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Mapper for converting between domain Author entities and their

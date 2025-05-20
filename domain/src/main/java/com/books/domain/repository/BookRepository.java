@@ -16,10 +16,14 @@ public interface BookRepository {
 
     /**
      * Finds all books in the system.
+     * Pagination is supported.
+     * 
+     * @param page the page number
+     * @param size the page size
      *
      * @return a list of all books
      */
-    List<Book> findAll();
+    List<Book> findAll(int page, int size);
 
     /**
      * Finds a book by its ID.

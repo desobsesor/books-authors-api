@@ -18,11 +18,15 @@ public interface AuthorRepository {
 
     /**
      * Finds all authors in the system.
+     * Pagination is supported.
+     * 
+     * @param page the page number
+     * @param size the page size
      *
      * @return a list of all authors
      */
     @NonNull
-    List<Author> findAll();
+    List<Author> findAll(int page, int size);
 
     /**
      * Finds an author by their ID.

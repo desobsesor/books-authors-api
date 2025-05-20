@@ -94,10 +94,10 @@ public class AuthorControllerTest {
     @DisplayName("Should return all authors when they exist")
     void getAllAuthors_ShouldReturnAllAuthors_WhenAuthorsExist() {
         // Configure the mocked service behavior
-        when(authorService.getAllAuthors()).thenReturn(authorList);
+        when(authorService.getAllAuthors(1, 10)).thenReturn(authorList);
 
         // Execute the method under test
-        ResponseEntity<List<AuthorDTO>> response = authorController.getAllAuthors();
+        ResponseEntity<List<AuthorDTO>> response = authorController.getAllAuthors(1, 10);
 
         // Verify results
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -114,10 +114,10 @@ public class AuthorControllerTest {
     @DisplayName("Should return empty list when no authors exist")
     void getAllAuthors_ShouldReturnEmptyList_WhenNoAuthorsExist() {
         // Configure the mocked service behavior to return an empty list
-        when(authorService.getAllAuthors()).thenReturn(Collections.emptyList());
+        when(authorService.getAllAuthors(1, 10)).thenReturn(Collections.emptyList());
 
         // Execute the method under test
-        ResponseEntity<List<AuthorDTO>> response = authorController.getAllAuthors();
+        ResponseEntity<List<AuthorDTO>> response = authorController.getAllAuthors(1, 10);
 
         // Verify results
         assertEquals(HttpStatus.OK, response.getStatusCode());

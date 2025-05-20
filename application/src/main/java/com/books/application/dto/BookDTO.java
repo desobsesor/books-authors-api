@@ -1,20 +1,21 @@
 package com.books.application.dto;
 
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.books.domain.model.Author;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * DTO (Data Transfer Object) for the Book entity.
- * Used to transfer book data between the application layer and the
- * API.
+ * Used to transfer book data between the application layer and the API.
  *
- * @author books
+ * @author books-authors-api
  */
 @Data
 @Builder
@@ -31,5 +32,5 @@ public class BookDTO {
      * A Set is used to avoid duplicates.
      */
     @Builder.Default
-    private Set<Long> authorIds = new HashSet<>();
+    private Set<Author> authorIds = new HashSet<>();
 }

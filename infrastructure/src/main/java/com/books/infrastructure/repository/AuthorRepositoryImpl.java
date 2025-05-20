@@ -81,8 +81,8 @@ public class AuthorRepositoryImpl implements AuthorRepository {
     };
 
     @Override
-    public List<Author> findAll() {
-        log.debug("Getting all authors using stored procedure");
+    public List<Author> findAll(int page, int size) {
+        log.debug("Getting all authors with pagination using stored procedure");
 
         try {
             SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
@@ -90,7 +90,11 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                     .withProcedureName("GET_ALL_AUTHORS")
                     .returningResultSet("p_authors", AUTHOR_ROW_MAPPER);
 
-            Map<String, Object> result = jdbcCall.execute(new HashMap<>());
+            MapSqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("p_page_number", page)
+                    .addValue("p_page_size", size);
+
+            Map<String, Object> result = jdbcCall.execute(params);
             if (result == null) {
                 log.warn("Stored procedure returned null result");
                 return List.of();
@@ -194,13 +198,13 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         return authors != null ? authors : List.of();
     }
 
-    @Override
     /**
      * Finds authors who have written books in the given genre.
      *
      * @param genre the genre to search for
      * @return a list of authors who have written books in the given genre
      */
+    @Override
     public List<Author> findByBookGenre(String genre) {
         log.debug("Finding authors by book genre: {}", genre);
 

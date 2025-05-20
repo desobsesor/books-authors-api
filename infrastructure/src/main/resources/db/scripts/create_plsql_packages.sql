@@ -33,6 +33,8 @@ CREATE SEQUENCE book_seq START WITH 1 INCREMENT BY 1;
 CREATE OR REPLACE PACKAGE AUTHOR_PKG AS
     -- Get all authors
     PROCEDURE GET_ALL_AUTHORS(
+        p_page_number IN NUMBER,
+        p_page_size   IN NUMBER,
         p_authors OUT SYS_REFCURSOR
     );
     
@@ -80,6 +82,8 @@ END AUTHOR_PKG;
 create or replace NONEDITIONABLE PACKAGE BODY AUTHOR_PKG AS
     -- Get all authors
     PROCEDURE GET_ALL_AUTHORS(
+        p_page_number IN NUMBER,
+        p_page_size   IN NUMBER,
         p_authors OUT SYS_REFCURSOR
     ) IS
     BEGIN
@@ -103,7 +107,9 @@ create or replace NONEDITIONABLE PACKAGE BODY AUTHOR_PKG AS
         FROM authors a
         LEFT JOIN book_authors ba ON a.author_id = ba.author_id
         LEFT JOIN books b ON ba.book_id = b.book_id
-        GROUP BY a.author_id, a.first_name, a.last_name, a.birth_date, DBMS_LOB.SUBSTR(a.biography, 4000, 1);
+        GROUP BY a.author_id, a.first_name, a.last_name, a.birth_date, DBMS_LOB.SUBSTR(a.biography, 4000, 1)
+        OFFSET ((p_page_number - 1) * p_page_size) ROWS
+        FETCH NEXT p_page_size ROWS ONLY;
     END GET_ALL_AUTHORS;
 
     -- Get author by ID
@@ -290,6 +296,8 @@ END AUTHOR_PKG;
 CREATE OR REPLACE PACKAGE BOOK_PKG AS
     -- Get all books
     PROCEDURE GET_ALL_BOOKS(
+        p_page_number IN NUMBER,
+        p_page_size   IN NUMBER,
         p_books OUT SYS_REFCURSOR
     );
     
@@ -352,7 +360,9 @@ END BOOK_PKG;
 create or replace NONEDITIONABLE PACKAGE BODY BOOK_PKG AS
     -- Get all books
     PROCEDURE GET_ALL_BOOKS(
-        p_books OUT SYS_REFCURSOR
+        p_page_number IN NUMBER,
+        p_page_size   IN NUMBER,
+        p_books       OUT SYS_REFCURSOR
     ) IS
     BEGIN
         OPEN p_books FOR
@@ -363,19 +373,30 @@ create or replace NONEDITIONABLE PACKAGE BODY BOOK_PKG AS
             b.publication_date,
             b.publisher,
             b.genre,
-            b.summary,
-            a.author_id  AS author_id,
-            a.first_name AS author_first_name,
-            a.last_name AS author_last_name,
-            a.birth_date AS author_birth_date,
-            a.biography AS author_biography
-        FROM 
-            books b
-        JOIN 
-            book_authors ba ON b.book_id = ba.book_id
-        JOIN 
-            authors a ON ba.author_id = a.author_id
-        ORDER BY b.title;
+            DBMS_LOB.SUBSTR(b.summary, 4000, 1) AS summary,
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'authorId' VALUE a.author_id,
+                    'firstName' VALUE a.first_name,
+                    'lastName' VALUE a.last_name,
+                    'birthDate' VALUE a.birth_date,
+                    'biography' VALUE DBMS_LOB.SUBSTR(a.biography, 4000, 1)
+                )
+            ) AS authors_json
+        FROM books b
+        JOIN book_authors ba ON b.book_id = ba.book_id
+        JOIN authors a ON ba.author_id = a.author_id
+        GROUP BY 
+            b.book_id,
+            b.title,
+            b.isbn,
+            b.publication_date,
+            b.publisher,
+            b.genre,
+            DBMS_LOB.SUBSTR(b.summary, 4000, 1)
+        ORDER BY b.title
+        OFFSET ((p_page_number - 1) * p_page_size) ROWS
+        FETCH NEXT p_page_size ROWS ONLY;
     END GET_ALL_BOOKS;
 
     -- Get book by ID
