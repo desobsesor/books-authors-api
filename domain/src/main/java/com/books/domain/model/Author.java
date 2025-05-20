@@ -13,7 +13,7 @@ import java.util.Set;
  * Domain entity representing an author in the system.
  * Contains the core business data and behavior for authors.
  *
- * @author books
+ * @author books-authors-api
  */
 @Data
 @Builder
@@ -28,6 +28,9 @@ public class Author {
 
     @Builder.Default
     private Set<Book> books = new HashSet<>();
+
+    @Builder.Default
+    private Set<Long> booksIds = new HashSet<>();
 
     /**
      * Returns the full name of the author by combining first and last name.

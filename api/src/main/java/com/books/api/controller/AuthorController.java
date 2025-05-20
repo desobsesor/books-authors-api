@@ -1,10 +1,26 @@
 package com.books.api.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.books.api.security.JwtTokenProvider;
 import com.books.application.dto.AuthorDTO;
 import com.books.application.dto.CreateAuthorDTO;
 import com.books.application.dto.UpdateAuthorDTO;
 import com.books.application.service.AuthorService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,24 +32,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * REST controller for author-related operations.
  * Exposes endpoints to create, read, update and delete authors.
  *
- * @author books
+ * @author books-authors-api
  */
 @RestController
 @RequestMapping("${CONTEXT_PATH}/authors")
 @SecurityRequirement(name = "bearer-key")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "authors", description = "API for managing authors")
+@Tag(name = "Authors", description = "API for managing authors")
 public class AuthorController {
 
         private final AuthorService authorService;
@@ -41,17 +52,24 @@ public class AuthorController {
 
         /**
          * Gets all authors.
+         * Pagination is supported.
+         * By default, 10 authors per page are returned.
+         * Can be customized using query parameters:
+         * - page: page number (default: 0)
+         * - size: number of authors per page (default: 10)
          *
          * @return list of authors
          */
         @GetMapping
-        @Operation(summary = "Get all authors", description = "Retrieves a list of all authors available in the system")
+        @Operation(summary = "Get all authors", description = "Retrieves a paginated list of all authors available in the system")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Authors found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthorDTO.class)))
         })
-        public ResponseEntity<List<AuthorDTO>> getAllAuthors() {
-                log.debug("REST request to get all authors");
-                List<AuthorDTO> authors = authorService.getAllAuthors();
+        public ResponseEntity<List<AuthorDTO>> getAllAuthors(
+                        @RequestParam(defaultValue = "1") int page,
+                        @RequestParam(defaultValue = "10") int size) {
+                log.debug("REST request to get all authors with pagination: page={}, size={}", page, size);
+                List<AuthorDTO> authors = authorService.getAllAuthors(page, size);
                 return ResponseEntity.ok(authors);
         }
 
@@ -96,7 +114,7 @@ public class AuthorController {
                         @ApiResponse(responseCode = "400", description = "Invalid author data", content = @Content)
         })
         public ResponseEntity<AuthorDTO> createAuthor(
-                        @Parameter(description = "Data to create the author", required = true) @RequestBody CreateAuthorDTO createAuthorDTO) {
+                        @Parameter(description = "Data to create the author", required = true) @Valid @RequestBody CreateAuthorDTO createAuthorDTO) {
                 log.debug("REST request to create a new author: {}", createAuthorDTO);
                 AuthorDTO result = authorService.createAuthor(createAuthorDTO);
                 return ResponseEntity.status(HttpStatus.CREATED).body(result);

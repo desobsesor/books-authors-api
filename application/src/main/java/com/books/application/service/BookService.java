@@ -1,19 +1,22 @@
 package com.books.application.service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.books.application.dto.BookDTO;
 import com.books.application.dto.CreateBookDTO;
 import com.books.application.dto.UpdateBookDTO;
 import com.books.application.mapper.BookMapper;
 import com.books.domain.model.Book;
 import com.books.domain.repository.BookRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Service class that implements business logic for book operations.
@@ -32,12 +35,19 @@ public class BookService {
 
     /**
      * Retrieves all books from the repository.
+     * Pagination is supported.
+     *
+     * @param page the page number (0-based)
+     * @param size the number of items per page
      *
      * @return a list of all books
      */
-    public List<Book> findAllBooks() {
-        log.debug("Getting all books");
-        return bookRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<BookDTO> getAllBooks(int page, int size) {
+        return bookRepository.findAll(page, size)
+                .stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -46,22 +56,22 @@ public class BookService {
      * @param id the ID of the book to retrieve
      * @return an Optional containing the book if found, or empty if not found
      */
-    public Optional<Book> findBookById(Long id) {
-        log.debug("Getting book with ID: {}", id);
-        return bookRepository.findById(id);
+    @Transactional(readOnly = true)
+    public Optional<BookDTO> findBookById(Long id) {
+        return bookRepository.findById(id)
+                .map(bookMapper::toDto);
     }
 
     /**
      * Creates a new book or updates an existing one.
      *
-     * @param book the book to save
+     * @param createBookDTO the book to save
      * @return the saved book with ID populated if it was a new entity
      */
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public BookDTO createBook(CreateBookDTO createBookDTO) {
-        log.debug("Creating new book: {}", createBookDTO);
         Book book = bookMapper.toEntity(createBookDTO);
-        Book savedBook = bookRepository.save(book);
-        return bookMapper.toDto(savedBook);
+        return bookMapper.toDto(bookRepository.save(book));
     }
 
     /**
@@ -72,13 +82,12 @@ public class BookService {
      * @return an Optional with the updated book DTO if found, or empty
      *         if not
      */
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Optional<BookDTO> updateBook(Long id, UpdateBookDTO updateBookDTO) {
-        log.debug("Updating book with ID: {}", id);
         return bookRepository.findById(id)
                 .map(book -> {
                     bookMapper.updateEntityFromDto(updateBookDTO, book);
-                    Book updatedBook = bookRepository.save(book);
-                    return bookMapper.toDto(updatedBook);
+                    return bookMapper.toDto(bookRepository.save(book));
                 });
     }
 
@@ -88,6 +97,7 @@ public class BookService {
      * @param id the ID of the book to delete
      * @return true if the book was deleted, false if the book was not found
      */
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public boolean deleteBook(Long id) {
         return bookRepository.deleteById(id);
     }
@@ -98,8 +108,11 @@ public class BookService {
      * @param title the title to search for
      * @return a list of books with titles containing the given string
      */
-    public List<Book> findBooksByTitle(String title) {
-        return bookRepository.findByTitleContaining(title);
+    @Transactional(readOnly = true)
+    public List<BookDTO> findBooksByTitle(String title) {
+        return bookRepository.findByTitleContaining(title).stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -108,8 +121,11 @@ public class BookService {
      * @param genre the genre to search for
      * @return a list of books with the given genre
      */
-    public List<Book> findBooksByGenre(String genre) {
-        return bookRepository.findByGenre(genre);
+    @Transactional(readOnly = true)
+    public List<BookDTO> findBooksByGenre(String genre) {
+        return bookRepository.findByGenre(genre).stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -118,8 +134,11 @@ public class BookService {
      * @param authorId the ID of the author
      * @return a list of books written by the author with the given ID
      */
-    public List<Book> findBooksByAuthorId(Long authorId) {
-        return bookRepository.findByAuthorId(authorId);
+    @Transactional(readOnly = true)
+    public List<BookDTO> findBooksByAuthorId(Long authorId) {
+        return bookRepository.findByAuthorId(authorId).stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -129,7 +148,10 @@ public class BookService {
      * @param endYear   the end year (inclusive)
      * @return a list of books published between the given years
      */
-    public List<Book> findBooksByPublicationYearRange(int startYear, int endYear) {
-        return bookRepository.findByPublicationYearBetween(startYear, endYear);
+    @Transactional(readOnly = true)
+    public List<BookDTO> findBooksByPublicationYearRange(int startYear, int endYear) {
+        return bookRepository.findByPublicationYearBetween(startYear, endYear).stream()
+                .map(bookMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

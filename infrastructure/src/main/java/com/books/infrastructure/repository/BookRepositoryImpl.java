@@ -8,8 +8,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
@@ -17,6 +19,9 @@ import org.springframework.stereotype.Repository;
 import com.books.domain.model.Author;
 import com.books.domain.model.Book;
 import com.books.domain.repository.BookRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,42 +47,69 @@ public class BookRepositoryImpl implements BookRepository {
      * @return a Book entity populated with data from the database
      * @throws SQLException if an error occurs while accessing the database
      */
-    private Book mapRowToBook(ResultSet rs, int rowNum) throws SQLException {
-        return Book.builder()
-                .bookId(rs.getLong("BOOK_ID"))
-                .title(rs.getString("TITLE"))
-                .isbn(rs.getString("ISBN"))
-                .publicationDate(rs.getDate("PUBLICATION_DATE").toLocalDate())
-                .publisher(rs.getString("PUBLISHER"))
-                .genre(rs.getString("GENRE"))
-                .summary(rs.getString("SUMMARY"))
-                .authors(new HashSet<>(Collections.singleton(Author.builder()
-                        .authorId(rs.getLong("AUTHOR_ID"))
-                        .firstName(rs.getString("AUTHOR_FIRST_NAME"))
-                        .lastName(rs.getString("AUTHOR_LAST_NAME"))
-                        .birthDate(
-                                rs.getDate("AUTHOR_BIRTH_DATE") != null ? rs.getDate("AUTHOR_BIRTH_DATE").toLocalDate()
-                                        : null)
-                        .biography(rs.getString("AUTHOR_BIOGRAPHY"))
-                        .build())))
-                .build();
-    }
-
-    @Override
-    public List<Book> findAll() {
-        SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
-                .withCatalogName("BOOK_PKG")
-                .withProcedureName("GET_ALL_BOOKS")
-                .returningResultSet("p_books", this::mapRowToBook);
-
-        Map<String, Object> result = jdbcCall.execute(new HashMap<>());
-        if (result == null) {
-            log.warn("Stored procedure returned null result");
-            return List.of();
+    private static final RowMapper<Book> BOOK_ROW_MAPPER = new RowMapper<Book>() {
+        @Override
+        public Book mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return Book.builder()
+                    .bookId(rs.getLong("BOOK_ID"))
+                    .title(rs.getString("TITLE"))
+                    .isbn(rs.getString("ISBN"))
+                    .publicationDate(rs.getDate("PUBLICATION_DATE").toLocalDate())
+                    .publisher(rs.getString("PUBLISHER"))
+                    .genre(rs.getString("GENRE"))
+                    .summary(rs.getString("SUMMARY"))
+                    .authors(rs.getString("authors_json") != null
+                            ? parseAuthorsJson(rs.getString("authors_json"))
+                            : new HashSet<>(Collections.singleton(Author.builder()
+                                    .authorId(rs.getLong("authorId"))
+                                    .firstName(rs.getString("firstName"))
+                                    .lastName(rs.getString("lastName"))
+                                    .birthDate(
+                                            rs.getDate("birthDate") != null ? rs.getDate("birthDate").toLocalDate()
+                                                    : null)
+                                    .biography(rs.getString("biography"))
+                                    .build())))
+                    .build();
         }
 
-        List<Book> books = (List<Book>) result.get("p_books");
-        return books != null ? books : List.of();
+        private Set<Author> parseAuthorsJson(String json) {
+            try {
+                ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+                return mapper.readValue(json, new TypeReference<HashSet<Author>>() {
+                });
+            } catch (Exception e) {
+                log.error("Error parsing authors JSON", e);
+                return new HashSet<>();
+            }
+        }
+    };
+
+    @Override
+    public List<Book> findAll(int page, int size) {
+        log.debug("Getting all books with pagination using stored procedure");
+        try {
+            SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+                    .withCatalogName("BOOK_PKG")
+                    .withProcedureName("GET_ALL_BOOKS")
+                    .returningResultSet("p_books", BOOK_ROW_MAPPER);
+
+            MapSqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("p_page_number", page)
+                    .addValue("p_page_size", size);
+
+            Map<String, Object> result = jdbcCall.execute(params);
+            if (result == null) {
+                log.warn("Stored procedure returned null result");
+                return List.of();
+            }
+
+            @SuppressWarnings("unchecked")
+            List<Book> books = (List<Book>) result.get("p_books");
+            return books != null ? books : List.of();
+        } catch (Exception e) {
+            log.error("Error retrieving all authors", e);
+            return List.of();
+        }
     }
 
     @Override
@@ -86,12 +118,13 @@ public class BookRepositoryImpl implements BookRepository {
             SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                     .withCatalogName("BOOK_PKG")
                     .withProcedureName("GET_BOOK_BY_ID")
-                    .returningResultSet("p_book", this::mapRowToBook);
+                    .returningResultSet("p_book", BOOK_ROW_MAPPER);
 
             Map<String, Object> inParams = new HashMap<>();
             inParams.put("p_book_id", id);
 
             Map<String, Object> result = jdbcCall.execute(inParams);
+            @SuppressWarnings("unchecked")
             List<Book> books = (List<Book>) result.get("p_book");
 
             return books.isEmpty() ? Optional.empty() : Optional.of(books.get(0));
@@ -103,6 +136,8 @@ public class BookRepositoryImpl implements BookRepository {
 
     @Override
     public Book save(Book book) {
+        log.debug("Saving book: {}", book);
+
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("SAVE_BOOK");
@@ -176,13 +211,15 @@ public class BookRepositoryImpl implements BookRepository {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_TITLE")
-                .returningResultSet("p_books", this::mapRowToBook);
+                .returningResultSet("p_books", BOOK_ROW_MAPPER);
 
         Map<String, Object> inParams = new HashMap<>();
         inParams.put("P_TITLE", "%" + title + "%");
 
         Map<String, Object> result = jdbcCall.execute(inParams);
-        return (List<Book>) result.get("p_books");
+        @SuppressWarnings("unchecked")
+        List<Book> books = (List<Book>) result.get("p_books");
+        return books != null ? books : List.of();
     }
 
     @Override
@@ -190,28 +227,31 @@ public class BookRepositoryImpl implements BookRepository {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_GENRE")
-                .returningResultSet("p_books", this::mapRowToBook);
+                .returningResultSet("p_books", BOOK_ROW_MAPPER);
 
         Map<String, Object> inParams = new HashMap<>();
         inParams.put("P_GENRE", genre);
 
         Map<String, Object> result = jdbcCall.execute(inParams);
-        return (List<Book>) result.get("p_books");
+        @SuppressWarnings("unchecked")
+        List<Book> books = (List<Book>) result.get("p_books");
+        return books != null ? books : List.of();
     }
 
     @Override
     public List<Book> findByAuthorId(Long authorId) {
-        // Call PL/SQL procedure: BOOK_PKG.FIND_BOOKS_BY_AUTHOR
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_AUTHOR")
-                .returningResultSet("p_books", this::mapRowToBook);
+                .returningResultSet("p_books", BOOK_ROW_MAPPER);
 
         Map<String, Object> inParams = new HashMap<>();
         inParams.put("P_AUTHOR_ID", authorId);
 
         Map<String, Object> result = jdbcCall.execute(inParams);
-        return (List<Book>) result.get("p_books");
+        @SuppressWarnings("unchecked")
+        List<Book> books = (List<Book>) result.get("p_books");
+        return books != null ? books : List.of();
     }
 
     @Override
@@ -219,13 +259,15 @@ public class BookRepositoryImpl implements BookRepository {
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("BOOK_PKG")
                 .withProcedureName("FIND_BOOKS_BY_YEAR_RANGE")
-                .returningResultSet("p_books", this::mapRowToBook);
+                .returningResultSet("p_books", BOOK_ROW_MAPPER);
 
         Map<String, Object> inParams = new HashMap<>();
         inParams.put("P_START_YEAR", startYear);
         inParams.put("P_END_YEAR", endYear);
 
         Map<String, Object> result = jdbcCall.execute(inParams);
-        return (List<Book>) result.get("p_books");
+        @SuppressWarnings("unchecked")
+        List<Book> books = (List<Book>) result.get("p_books");
+        return books != null ? books : List.of();
     }
 }
