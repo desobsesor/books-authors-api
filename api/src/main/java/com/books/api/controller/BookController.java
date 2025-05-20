@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @SecurityRequirement(name = "bearer-key")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Books", description = "Book management API")
+@Tag(name = "books", description = "Book management API")
 public class BookController {
 
         private final BookService bookService;

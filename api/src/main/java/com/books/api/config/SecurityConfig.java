@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.books.api.security.JwtTokenFilter;
 import com.books.api.security.RateLimitingFilter;
@@ -26,9 +27,11 @@ public class SecurityConfig {
     private String secretKey;
 
     private final RateLimitingFilter rateLimitingFilter;
+    private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(RateLimitingFilter rateLimitingFilter) {
+    public SecurityConfig(RateLimitingFilter rateLimitingFilter, CorsConfigurationSource corsConfigurationSource) {
         this.rateLimitingFilter = rateLimitingFilter;
+        this.corsConfigurationSource = corsConfigurationSource;
     }
 
     /**
@@ -42,6 +45,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/api/authors/generate-token").permitAll()
