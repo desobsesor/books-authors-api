@@ -4,19 +4,23 @@
 </p>
   <p align="center">
   
-A RESTful API for managing books and authors with a PL/SQL backend.</p>
+A RESTful API for managing books and authors with a Java, Spring Boot, and PL/SQL backend.</p>
 <p align="center">
   <a href="https://www.java.com" target="_blank"><img src="https://img.shields.io/badge/Java-17-ED8B00?style=flat&logo=java&logoColor=white" alt="Java"></a>
   <a href="https://spring.io/" target="_blank"><img src="https://img.shields.io/badge/Spring_Boot-3.2.0-6DB33F?style=flat&logo=spring&logoColor=white" alt="Spring Boot"></a>
   <a href="https://maven.apache.org/" target="_blank"><img src="https://img.shields.io/badge/Maven-3.8-C71A36?style=flat&logo=apache-maven&logoColor=white" alt="Maven"></a>
+  <a href="https://www.oracle.com/database/" target="_blank"><img src="https://img.shields.io/badge/Oracle-Database-23.3.0.23.09-F80000?style=flat&logo=oracle&logoColor=white" alt="Oracle Database"></a>
+  <a href="https://springdoc.org/" target="_blank"><img src="https://img.shields.io/badge/OpenAPI-2.2.0-85EA2D?style=flat&logo=swagger&logoColor=white" alt="OpenAPI"></a>
+  <a href="https://www.docker.com/" target="_blank"><img src="https://img.shields.io/badge/Docker-Containerized-2496ED?style=flat&logo=docker&logoColor=white" alt="Docker"></a>
+  <a href="https://projectlombok.org/" target="_blank"><img src="https://img.shields.io/badge/Lombok-1.18.30-0096D6?style=flat&logo=java&logoColor=white" alt="Lombok"></a>
+  <a href="https://mapstruct.org/" target="_blank"><img src="https://img.shields.io/badge/MapStruct-1.5.5.Final-0096D6?style=flat&logo=java&logoColor=white" alt="MapStruct"></a>
+  <a href="https://junit.org/junit5/" target="_blank"><img src="https://img.shields.io/badge/JUnit-5.10.1-25A162?style=flat&logo=java&logoColor=white" alt="JUnit"></a>
   <a href="https://site.mockito.org" target="_blank"><img src="https://img.shields.io/badge/Mockito-5.7.0-83B81A?style=flat&logo=java&logoColor=white" alt="Mockito"></a>
-  <a href="https://www.oracle.com/database/" target="_blank"><img src="https://img.shields.io/badge/Oracle-Database-%23F80000?style=flat&logo=oracle&logoColor=white" alt="Oracle Database"></a>
-  <a href="https://springdoc.org/" target="_blank"><img src="https://img.shields.io/badge/OpenAPI-2.2.0-%2385EA2D?style=flat&logo=swagger&logoColor=white" alt="OpenAPI"></a>
-  <a href="https://www.docker.com/" target="_blank"><img src="https://img.shields.io/badge/Docker-Containerized-%232496ED?style=flat&logo=docker&logoColor=white" alt="Docker"></a>
-  <a href="https://projectlombok.org/" target="_blank"><img src="https://img.shields.io/badge/Lombok-1.18.30-%230096D6?style=flat&logo=java&logoColor=white" alt="Lombok"></a>
-  <a href="https://mapstruct.org/" target="_blank"><img src="https://img.shields.io/badge/MapStruct-1.5.5.Final-%230096D6?style=flat&logo=java&logoColor=white" alt="MapStruct"></a>
-  <a href="https://mapstruct.org/" target="_blank"><img src="https://img.shields.io/badge/MapStruct-1.5.5.Final-%230096D6?style=flat&logo=java&logoColor=white" alt="MapStruct"></a>
-  <a href="https://junit.org/junit5/" target="_blank"><img src="https://img.shields.io/badge/JUnit-5.10.1-%2325A162?style=flat&logo=java&logoColor=white" alt="JUnit"></a>
+  <a href="https://github.com/jwtk/jjwt" target="_blank"><img src="https://img.shields.io/badge/JJWT-0.11.5-990000?style=flat&logo=java&logoColor=white" alt="JJWT"></a>
+  <a href="https://github.com/FasterXML/jackson" target="_blank"><img src="https://img.shields.io/badge/Jackson-2.x-2196F3?style=flat&logo=java&logoColor=white" alt="Jackson"></a>
+  <a href="https://h2database.com/" target="_blank"><img src="https://img.shields.io/badge/H2-Database-4DB33F?style=flat&logo=java&logoColor=white" alt="H2 Database"></a>
+  <a href="https://www.slf4j.org/" target="_blank"><img src="https://img.shields.io/badge/SLF4J-2.x-FF9900?style=flat&logo=java&logoColor=white" alt="SLF4J"></a>
+  <a href="https://logback.qos.ch/" target="_blank"><img src="https://img.shields.io/badge/Logback-1.4.x-003366?style=flat&logo=java&logoColor=white" alt="Logback"></a>
 </p>
 
 ## Project Architecture
@@ -33,11 +37,17 @@ This project follows a clean hexagonal architecture with the following modules:
 - Java 17
 - Spring Boot 3.2.0
 - Maven (multi-module project)
-- Oracle Database with PL/SQL
-- OpenAPI 2.2.0 for API documentation
-- JUnit 5.10.1 and Mockito 5.7.0 for testing
-- Docker and Docker Compose for containerization
+- Oracle Database con PL/SQL
+- Oracle JDBC Driver 23.3.0.23.09
+- OpenAPI (springdoc-openapi) 2.2.0 for API documentation
+- JUnit 5.10.1 y Mockito 5.7.0 for testing
+- Docker y Docker Compose for containerization
 - MapStruct 1.5.5.Final for object mapping
+- Lombok 1.18.30 for standard text reduction
+- JWT (jjwt 0.11.5) for authentication
+- Jackson for JSON serialization
+- H2 for test database
+- Logback y SLF4J for logging
 
 ## Getting Started
 
@@ -66,10 +76,23 @@ Once the application is running, you can access the OpenAPI documentation at:
 ```
 http://localhost:8080/swagger-ui/index.html
 ```
+<p align="center">
+  <img src="api/src/main/resources/images/swagger-doc-min.png" alt="Swagger Doc" width="800"/>
+</p>
 
 ## Database Setup
 
 The application requires an Oracle database with PL/SQL procedures. The database scripts are located in the `infrastructure/src/main/resources/db/scripts` directory.
+
+1. Create a new schema in your Oracle database.
+2. Run the scripts `infrastructure/src/main/resources/db/scripts/create_plsql_packages.sql` to create tables and procedures.
+3. Run the scripts `infrastructure/src/main/resources/db/scripts/insert_test_data.sql` to load test data.
+
+# Preview ER diagram
+
+<p align="center">
+  <img src="api/src/main/resources/images/er-diagram-min.png" alt="ER diagrama" width="600"/>
+</p>
 
 ## Docker Setup
 
@@ -218,7 +241,6 @@ This will generate an HTML file in the root of the directory, a file called `tes
 <p align="center">
   <img src="api/src/main/resources/images/dashboard-coverage-min.png" alt="Code Coverage Dashboard" width="800"/>
 </p>
-
 
 ## Author ✒️
 
