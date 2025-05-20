@@ -25,7 +25,7 @@ import com.books.application.dto.BookDTO;
 import com.books.application.dto.CreateBookDTO;
 import com.books.application.dto.UpdateBookDTO;
 import com.books.application.service.BookService;
-import com.books.domain.model.Book;
+import com.books.domain.model.Author;
 
 /**
  * Unit tests for {@link BookController}.
@@ -44,10 +44,9 @@ public class BookControllerTest {
     @InjectMocks
     private BookController bookController;
 
-    private List<Book> bookList;
-    private Book book1;
-    private Book book2;
+    private List<BookDTO> bookListDTO;
     private BookDTO bookDTO1;
+    private BookDTO bookDTO2;
     private CreateBookDTO createBook1;
 
     /**
@@ -69,33 +68,37 @@ public class BookControllerTest {
         Set<Long> authorIds1 = new HashSet<>();
         authorIds1.add(1L);
 
+        Set<Author> author1 = new HashSet<>(Collections.singleton(Author.builder()
+                .authorId(1L)
+                .firstName("Gabriel")
+                .lastName("García Márquez")
+                .birthDate(LocalDate.of(1927, 3, 6))
+                .biography("Realismo mágico")
+                .build()));
+
         bookDTO1 = BookDTO.builder()
                 .bookId(1L)
-                .title("Cien años de soledad")
+                .title("Nuestro Hogar")
                 .isbn("9780307474728")
                 .publicationDate(LocalDate.of(1967, 5, 30))
-                .authorIds(authorIds1)
+                .authorIds(author1)
                 .build();
+
+        bookDTO2 = BookDTO.builder()
+                .bookId(2L)
+                .title("A la luz del Camino")
+                .isbn("97803074343434")
+                .publicationDate(LocalDate.of(1967, 5, 30))
+                .authorIds(author1)
+                .build();
+
+        bookListDTO = new ArrayList<>();
+        bookListDTO.add(bookDTO1);
+        bookListDTO.add(bookDTO2);
 
         Set<Long> authorIds2 = new HashSet<>();
         authorIds2.add(2L);
 
-        // Create test data for Book
-        book1 = new Book();
-        book1.setBookId(1L);
-        book1.setTitle("Cien años de soledad");
-        book1.setIsbn("9780307474728");
-        book1.setPublicationDate(LocalDate.of(1967, 5, 30));
-
-        book2 = new Book();
-        book2.setBookId(2L);
-        book2.setTitle("El Aleph");
-        book2.setIsbn("9788437604848");
-        book2.setPublicationDate(LocalDate.of(1949, 6, 15));
-
-        bookList = new ArrayList<>();
-        bookList.add(book1);
-        bookList.add(book2);
     }
 
     /**
@@ -106,16 +109,16 @@ public class BookControllerTest {
     @DisplayName("Should return all books when they exist")
     void getAllBooks_ShouldReturnAllBooks_WhenBooksExist() {
         // Configure the mocked service behavior
-        when(bookService.findAllBooks()).thenReturn(bookList);
+        when(bookService.getAllBooks(0, 2)).thenReturn(bookListDTO);
 
         // Execute the method under test
-        ResponseEntity<List<Book>> response = bookController.getAllBooks();
+        ResponseEntity<List<BookDTO>> response = bookController.getAllBooks(0, 2);
 
         // Verify results
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, response.getBody().size());
-        assertEquals(book1.getBookId(), response.getBody().get(0).getBookId());
-        assertEquals(book2.getBookId(), response.getBody().get(1).getBookId());
+        assertEquals(bookDTO1.getBookId(), response.getBody().get(0).getBookId());
+        assertEquals(bookDTO2.getBookId(), response.getBody().get(1).getBookId());
     }
 
     /**
@@ -126,10 +129,10 @@ public class BookControllerTest {
     @DisplayName("Should return empty list when no books exist")
     void getAllBooks_ShouldReturnEmptyList_WhenNoBooksExist() {
         // Configure the mocked service behavior to return an empty list
-        when(bookService.findAllBooks()).thenReturn(Collections.emptyList());
+        when(bookService.getAllBooks(1, 10)).thenReturn(Collections.emptyList());
 
         // Execute the method under test
-        ResponseEntity<List<Book>> response = bookController.getAllBooks();
+        ResponseEntity<List<BookDTO>> response = bookController.getAllBooks(1, 10);
 
         // Verify results
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -144,15 +147,15 @@ public class BookControllerTest {
     @DisplayName("Should return the book when the ID exists")
     void getBookById_ShouldReturnBook_WhenIdExists() {
         // Configure the mocked service behavior
-        when(bookService.findBookById(1L)).thenReturn(java.util.Optional.of(book1));
+        when(bookService.findBookById(1L)).thenReturn(java.util.Optional.of(bookDTO1));
 
         // Execute the method under test
-        ResponseEntity<Book> response = bookController.getBookById(1L);
+        ResponseEntity<BookDTO> response = bookController.getBookById(1L);
 
         // Verify results
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(book1.getBookId(), response.getBody().getBookId());
-        assertEquals(book1.getTitle(), response.getBody().getTitle());
+        assertEquals(bookDTO1.getBookId(), response.getBody().getBookId());
+        assertEquals(bookDTO1.getTitle(), response.getBody().getTitle());
     }
 
     /**
@@ -166,7 +169,7 @@ public class BookControllerTest {
         when(bookService.findBookById(99L)).thenReturn(java.util.Optional.empty());
 
         // Execute the method under test
-        ResponseEntity<Book> response = bookController.getBookById(99L);
+        ResponseEntity<BookDTO> response = bookController.getBookById(99L);
 
         // Verify results
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -258,11 +261,11 @@ public class BookControllerTest {
     @Test
     @DisplayName("Should return books that match the title")
     void searchBooksByTitle_ShouldReturnBooks_WhenMatch() {
-        when(bookService.findBooksByTitle("Aleph")).thenReturn(List.of(book2));
-        ResponseEntity<List<Book>> response = bookController.searchBooksByTitle("Aleph");
+        when(bookService.findBooksByTitle("Nuestro Hogar")).thenReturn(List.of(bookDTO1));
+        ResponseEntity<List<BookDTO>> response = bookController.searchBooksByTitle("Nuestro Hogar");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
-        assertEquals("El Aleph", response.getBody().get(0).getTitle());
+        assertEquals("Nuestro Hogar", response.getBody().get(0).getTitle());
     }
 
     /**
@@ -273,7 +276,7 @@ public class BookControllerTest {
     @DisplayName("Should return empty list when there are no title matches")
     void searchBooksByTitle_ShouldReturnEmptyList_WhenNoMatch() {
         when(bookService.findBooksByTitle("NoExiste")).thenReturn(Collections.emptyList());
-        ResponseEntity<List<Book>> response = bookController.searchBooksByTitle("NoExiste");
+        ResponseEntity<List<BookDTO>> response = bookController.searchBooksByTitle("NoExiste");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(0, response.getBody().size());
     }
@@ -284,11 +287,11 @@ public class BookControllerTest {
     @Test
     @DisplayName("Should return books that match the genre")
     void searchBooksByGenre_ShouldReturnBooks_WhenMatch() {
-        when(bookService.findBooksByGenre("Realismo mágico")).thenReturn(List.of(book1));
-        ResponseEntity<List<Book>> response = bookController.searchBooksByGenre("Realismo mágico");
+        when(bookService.findBooksByGenre("Realismo mágico")).thenReturn(List.of(bookDTO1));
+        ResponseEntity<List<BookDTO>> response = bookController.searchBooksByGenre("Realismo mágico");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
-        assertEquals("Cien años de soledad", response.getBody().get(0).getTitle());
+        assertEquals("Nuestro Hogar", response.getBody().get(0).getTitle());
     }
 
     /**
@@ -299,7 +302,7 @@ public class BookControllerTest {
     @DisplayName("Should return empty list when there are no genre matches")
     void searchBooksByGenre_ShouldReturnEmptyList_WhenNoMatch() {
         when(bookService.findBooksByGenre("NoExiste")).thenReturn(Collections.emptyList());
-        ResponseEntity<List<Book>> response = bookController.searchBooksByGenre("NoExiste");
+        ResponseEntity<List<BookDTO>> response = bookController.searchBooksByGenre("NoExiste");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(0, response.getBody().size());
     }
@@ -310,8 +313,8 @@ public class BookControllerTest {
     @Test
     @DisplayName("Should return books associated with the author")
     void searchBooksByAuthor_ShouldReturnBooks_WhenAuthorHasBooks() {
-        when(bookService.findBooksByAuthorId(1L)).thenReturn(List.of(book1));
-        ResponseEntity<List<Book>> response = bookController.searchBooksByAuthor(1L);
+        when(bookService.findBooksByAuthorId(1L)).thenReturn(List.of(bookDTO1));
+        ResponseEntity<List<BookDTO>> response = bookController.searchBooksByAuthor(1L);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
     }
@@ -324,7 +327,7 @@ public class BookControllerTest {
     @DisplayName("Should return empty list when there are no books associated with the author")
     void searchBooksByAuthor_ShouldReturnEmptyList_WhenNoBooksForAuthor() {
         when(bookService.findBooksByAuthorId(99L)).thenReturn(Collections.emptyList());
-        ResponseEntity<List<Book>> response = bookController.searchBooksByAuthor(99L);
+        ResponseEntity<List<BookDTO>> response = bookController.searchBooksByAuthor(99L);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(0, response.getBody().size());
     }
@@ -335,11 +338,11 @@ public class BookControllerTest {
     @Test
     @DisplayName("Should return books published within the year range")
     void searchBooksByYearRange_ShouldReturnBooks_WhenInRange() {
-        when(bookService.findBooksByPublicationYearRange(1960, 1970)).thenReturn(List.of(book1));
-        ResponseEntity<List<Book>> response = bookController.searchBooksByYearRange(1960, 1970);
+        when(bookService.findBooksByPublicationYearRange(1960, 1970)).thenReturn(List.of(bookDTO1));
+        ResponseEntity<List<BookDTO>> response = bookController.searchBooksByYearRange(1960, 1970);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(1, response.getBody().size());
-        assertEquals("Cien años de soledad", response.getBody().get(0).getTitle());
+        assertEquals("Nuestro Hogar", response.getBody().get(0).getTitle());
     }
 
     /**
@@ -350,7 +353,7 @@ public class BookControllerTest {
     @DisplayName("Should return empty list when there are no books in the year range")
     void searchBooksByYearRange_ShouldReturnEmptyList_WhenNoMatch() {
         when(bookService.findBooksByPublicationYearRange(2000, 2010)).thenReturn(Collections.emptyList());
-        ResponseEntity<List<Book>> response = bookController.searchBooksByYearRange(2000, 2010);
+        ResponseEntity<List<BookDTO>> response = bookController.searchBooksByYearRange(2000, 2010);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(0, response.getBody().size());
     }

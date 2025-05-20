@@ -1,14 +1,19 @@
 package com.books.application.mapper;
 
+import java.util.Set;
+
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
+
 import com.books.application.dto.BookDTO;
 import com.books.application.dto.CreateBookDTO;
 import com.books.application.dto.UpdateBookDTO;
-import com.books.domain.model.Book;
 import com.books.domain.model.Author;
-import org.mapstruct.*;
-
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.books.domain.model.Book;
 
 /**
  * Mapper for converting between domain Book entities and their
@@ -55,12 +60,10 @@ public interface BookMapper {
      * @param book the Book entity from which to extract author IDs
      * @return a set of author IDs
      */
-    default Set<Long> mapAuthorIdsFromBook(Book book) {
+    default Set<Author> mapAuthorIdsFromBook(Book book) {
         if (book.getAuthors() == null) {
             return Set.of();
         }
-        return book.getAuthors().stream()
-                .map(Author::getAuthorId)
-                .collect(Collectors.toSet());
+        return book.getAuthors();
     }
 }

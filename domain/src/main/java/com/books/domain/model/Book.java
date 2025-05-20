@@ -13,7 +13,7 @@ import java.util.Set;
  * Domain entity representing a book in the system.
  * Contains the core business data and behavior for books.
  *
- * @author yovanysuarez
+ * @author books-authors-api
  */
 @Data
 @Builder
