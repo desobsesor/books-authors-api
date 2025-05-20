@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @SecurityRequirement(name = "bearer-key")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Authors", description = "API for managing authors")
+@Tag(name = "authors", description = "API for managing authors")
 public class AuthorController {
 
         private final AuthorService authorService;

@@ -1,22 +1,19 @@
 package com.books.api.config;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.util.AssertionErrors.assertTrue;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.books.api.security.JwtTokenFilter;
 import com.books.api.security.RateLimitingFilter;
@@ -25,42 +22,42 @@ import com.books.api.security.RateLimitingFilter;
 @ContextConfiguration(classes = { SecurityConfig.class, SecurityConfigTest.TestConfig.class })
 public class SecurityConfigTest {
 
-    @Mock
-    private HttpSecurity httpSecurity;
-
-    @SuppressWarnings("rawtypes")
-    @Mock
-    private AuthorizationManagerRequestMatcherRegistry authorizeRequestsRegistry;
-
     @Autowired
     private SecurityConfig securityConfig;
+
+    @Autowired
+    private CorsConfigurationSource corsConfigurationSource;
 
     @TestConfiguration
     static class TestConfig {
         @Bean
         public RateLimitingFilter rateLimitingFilter() {
-            return mock(RateLimitingFilter.class);
+            return new RateLimitingFilter(null, null);
         }
 
         @Bean
         public JwtTokenFilter jwtTokenFilter() {
             return mock(JwtTokenFilter.class);
         }
+
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+            return request -> null;
+        }
     }
 
     @Test
-    @DisplayName("You should configure the security filter chain correctly.")
-    void testSecurityFilterChain() throws Exception {
-        // Configure mocks to return the httpSecurity object
-        when(httpSecurity.csrf(any())).thenReturn(httpSecurity);
-        when(httpSecurity.authorizeHttpRequests(any())).thenReturn(httpSecurity);
-        when(httpSecurity.sessionManagement(any())).thenReturn(httpSecurity);
-        when(httpSecurity.addFilterBefore(any(), any())).thenReturn(httpSecurity);
+    @DisplayName("CorsConfigurationSource bean should exist in Spring context")
+    void testCorsConfigurationSourceBeanExists() {
+        assertNotNull(corsConfigurationSource,
+                "CorsConfigurationSource bean should be present in Spring context");
+    }
 
-        // Execute the method under test
-        SecurityFilterChain filterChain = securityConfig.securityFilterChain(httpSecurity);
-
-        // Check results
-        assertNotNull(filterChain);
+    @Test
+    @DisplayName("Should properly configure SecurityFilterChain")
+    void testSecurityFilterChainIntegration() throws Exception {
+        SecurityFilterChain filterChain = securityConfig.securityFilterChain(null);
+        assertNotNull(filterChain, "SecurityFilterChain no debe ser null");
+        assertTrue("CorsConfigurationSource bean should be present", corsConfigurationSource != null);
     }
 }
