@@ -21,6 +21,7 @@ A RESTful API for managing books and authors with a Java, Spring Boot, and PL/SQ
   <a href="https://h2database.com/" target="_blank"><img src="https://img.shields.io/badge/H2-Database-4DB33F?style=flat&logo=java&logoColor=white" alt="H2 Database"></a>
   <a href="https://www.slf4j.org/" target="_blank"><img src="https://img.shields.io/badge/SLF4J-2.x-FF9900?style=flat&logo=java&logoColor=white" alt="SLF4J"></a>
   <a href="https://logback.qos.ch/" target="_blank"><img src="https://img.shields.io/badge/Logback-1.4.x-003366?style=flat&logo=java&logoColor=white" alt="Logback"></a>
+  <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License: Apache 2.0"></a>
 </p>
 
 ## Project Architecture
@@ -248,4 +249,8 @@ _Built by_
 
 - **Yovany Suárez Silva** - _Full Stack Software Engineer_ - [desobsesor](https://github.com/desobsesor)
 - Website - [https://desobsesor.github.io/portfolio-web](https://desobsesor.github.io/portfolio-web/)
+
+## License
+
+This project is licensed under the [Apache License 2.0](LICENSE). You are free to use, modify, and distribute this software under the terms of the Apache License, Version 2.0.
 

@@ -1,0 +1,23 @@
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+Copyright 2024 Authors of Books and Authors API
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-------------------------------------------------------------------------------
+
+This repository contains a basic Java Spring Boot project structure with PL/SQL integration for educational and open-source purposes. The source code and API may be freely used, modified, and distributed under the terms of the Apache 2.0 License. No warranty or liability is provided by the authors. This project is intended as a starting point for building RESTful APIs with Java, Spring Boot, and Oracle PL/SQL.
