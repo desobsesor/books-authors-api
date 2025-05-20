@@ -235,9 +235,9 @@ mvn clean test jacoco:report
 To generate and view code coverage reports, run the following script:
 
 ```bash
-generate-dashboard.bat
+docs/test-coverage/generate-dashboard.bat
 ```
-This will generate an HTML file in the root of the directory, a file called `test-dashboard.html`, which you can open in your browser to see detailed code coverage results.
+This will generate an HTML file in the root of the directory, a file called `docs/test-coverage/test-dashboard.html`, which you can open in your browser to see detailed code coverage results.
 
 <p align="center">
   <img src="api/src/main/resources/images/dashboard-coverage-min.png" alt="Code Coverage Dashboard" width="800"/>

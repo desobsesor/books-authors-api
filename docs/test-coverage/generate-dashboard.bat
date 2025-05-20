@@ -154,7 +154,7 @@ echo             ^<div class="report-links"^> >> test-dashboard.html
 echo                ^<div class="report-card"^> >> test-dashboard.html
 echo                    ^<h3^>Coverage Report - API^</h3^> >> test-dashboard.html
 echo                    ^<p^>Visualize API module-specific code coverage, including REST controllers.^</p^> >> test-dashboard.html
-echo                    ^<a href="api/target/site/jacoco/index.html" class="btn"^>View Report^</a^> >> test-dashboard.html
+echo                    ^<a href="../../api/target/site/jacoco/index.html" class="btn"^>View Report^</a^> >> test-dashboard.html
 echo                    ^<a href="run-coverage-tests.bat" class="btn run-button"^>Run Full Tests^</a^> >> test-dashboard.html
 echo                ^</div^> >> test-dashboard.html
 echo             ^</div^> >> test-dashboard.html
