@@ -634,3 +634,61 @@ create or replace NONEDITIONABLE PACKAGE BODY BOOK_PKG AS
 
 END BOOK_PKG;
 /
+
+CREATE SEQUENCE request_log_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+/
+
+-- Table for request logs
+CREATE TABLE request_log (
+    id NUMBER PRIMARY KEY,
+    http_method VARCHAR2(10) NOT NULL,
+    endpoint VARCHAR2(255) NOT NULL,
+    query_params VARCHAR2(1000),
+    client_ip VARCHAR2(45) NOT NULL,
+    user_id VARCHAR2(100),
+    status_code NUMBER(3) NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
+    processing_time_ms NUMBER NOT NULL,
+    rate_limit_exceeded NUMBER(1) DEFAULT 0 NOT NULL,
+    additional_info VARCHAR2(4000),
+    request_body VARCHAR2(4000),
+    response_body VARCHAR2(4000),
+    request_headers VARCHAR2(4000),
+    session_id VARCHAR2(100)
+);
+/
+
+-- Trigger to auto-increment the ID
+CREATE OR REPLACE TRIGGER request_log_bi_trg
+BEFORE INSERT ON request_log
+FOR EACH ROW
+BEGIN
+    IF :NEW.id IS NULL THEN
+        SELECT request_log_seq.NEXTVAL INTO :NEW.id FROM dual;
+    END IF;
+END;
+/
+
+-- Indexes for optimizing frequently asked queries
+CREATE INDEX idx_request_log_timestamp ON request_log(timestamp);
+CREATE INDEX idx_request_log_user_id ON request_log(user_id);
+CREATE INDEX idx_request_log_status_code ON request_log(status_code);
+/
+
+COMMENT ON TABLE request_log IS 'HTTP requests log';
+COMMENT ON COLUMN request_log.id IS 'Unique record identifier';
+COMMENT ON COLUMN request_log.http_method IS 'HTTP method used';
+COMMENT ON COLUMN request_log.endpoint IS 'Requested endpoint';
+COMMENT ON COLUMN request_log.query_params IS 'Query parameters';
+COMMENT ON COLUMN request_log.client_ip IS 'Client IP address';
+COMMENT ON COLUMN request_log.user_id IS 'User identifier';
+COMMENT ON COLUMN request_log.status_code IS 'HTTP status code';
+COMMENT ON COLUMN request_log.timestamp IS 'Request timestamp';
+COMMENT ON COLUMN request_log.processing_time_ms IS 'Processing time in milliseconds';
+COMMENT ON COLUMN request_log.rate_limit_exceeded IS 'Rate limit exceeded indicator (0: false, 1: true)';
+COMMENT ON COLUMN request_log.additional_info IS 'Additional request information';
+COMMENT ON COLUMN request_log.request_body IS 'Request body';
+COMMENT ON COLUMN request_log.response_body IS 'Response body';
+COMMENT ON COLUMN request_log.request_headers IS 'Request headers';
+COMMENT ON COLUMN request_log.session_id IS 'Session identifier';
+/

@@ -49,6 +49,8 @@ This project follows a clean hexagonal architecture with the following modules:
 - Jackson for JSON serialization
 - H2 for test database
 - Logback y SLF4J for logging
+- Spring Boot Actuator for monitoring and metrics
+- Auditing and log management with ApiAuditLog
 
 ## Getting Started
 
@@ -243,6 +245,55 @@ This will generate an HTML file in the root of the directory, a file called `doc
   <img src="api/src/main/resources/images/dashboard-coverage-min.png" alt="Code Coverage Dashboard" width="800"/>
 </p>
 
+## Audit Usage
+
+### Audit Log Query
+
+Audit logs can be queried through the following endpoints:
+
+#### General Query with Filters
+
+```
+GET /api/audit?clientIp=192.168.1.1&endpoint=/api/authors&statusCode=200
+```
+
+Available parameters:
+- `clientIp`: Filter by client IP address
+- `userId`: Filter by user ID
+- `endpoint`: Filter by endpoint path
+- `statusCode`: Filter by HTTP status code
+- `startTime`: Filter by start time (ISO format)
+- `endTime`: Filter by end time (ISO format)
+- `rateLimitAlert`: Filter only rate limit alerts
+
+#### Rate Limit Violation Alerts
+
+```
+GET /api/audit/rate-limit-alerts
+```
+
+Returns all requests that exceeded the configured rate limits.
+
+#### Metrics by Endpoint
+
+```
+GET /api/audit/metrics/endpoints?startTime=2023-01-01T00:00:00&endTime=2023-01-31T23:59:59
+```
+
+Provides usage statistics grouped by endpoint for the specified period.
+
+#### Metrics by Client
+
+```
+GET /api/audit/metrics/clients?startTime=2023-01-01T00:00:00&endTime=2023-01-31T23:59:59
+```
+
+Provides usage statistics grouped by client for the specified period.
+
+## Security
+
+All audit endpoints are protected and require the `ADMIN` role for access. Sensitive information such as tokens, passwords, and cookies is automatically filtered from audit logs to protect privacy and security.
+
 ## Author ✒️
 
 _Built by_
@@ -253,4 +304,3 @@ _Built by_
 ## License
 
 This project is licensed under the [Apache License 2.0](LICENSE). You are free to use, modify, and distribute this software under the terms of the Apache License, Version 2.0.
-

@@ -32,7 +32,7 @@ public class SecurityConfigTest {
     static class TestConfig {
         @Bean
         public RateLimitingFilter rateLimitingFilter() {
-            return new RateLimitingFilter(null, null);
+            return new RateLimitingFilter(null, null, null);
         }
 
         @Bean
