@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
 import io.github.cdimascio.dotenv.Dotenv;
 
 /**
@@ -13,12 +14,12 @@ import io.github.cdimascio.dotenv.Dotenv;
  * across all modules of the application.
  * Loads environment variables from .env file before starting the application.
  *
- * @author books
+ * @author books-authors-api
  */
 @SpringBootApplication
 @ComponentScan(basePackages = { "com.books" })
 @EntityScan("com.books.domain.model")
-@EnableJpaRepositories("com.books.infrastructure.repository")
+@EnableJpaRepositories(basePackages = "com.books.domain.repository")
 public class BooksAuthorsApiApplication {
 
     /**
