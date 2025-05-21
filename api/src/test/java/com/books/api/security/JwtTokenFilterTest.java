@@ -88,6 +88,7 @@ public class JwtTokenFilterTest {
         verifyNoMoreInteractions(response);
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     @DisplayName("Should send error when JWT token has expired")
     void shouldSendErrorWhenTokenIsExpired() throws ServletException, IOException {
@@ -108,6 +109,7 @@ public class JwtTokenFilterTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     @DisplayName("Should send error when JWT token is malformed")
     void shouldSendErrorWhenTokenIsMalformed() throws ServletException, IOException {
@@ -128,6 +130,7 @@ public class JwtTokenFilterTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     @DisplayName("Should send error when JWT token signature is invalid")
     void shouldSendErrorWhenTokenSignatureIsInvalid() throws ServletException, IOException {
@@ -148,6 +151,7 @@ public class JwtTokenFilterTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     @DisplayName("Should continue filter chain when JWT token is valid")
     void shouldContinueFilterChainWhenTokenIsValid() throws ServletException, IOException {

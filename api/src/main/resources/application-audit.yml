@@ -1,0 +1,38 @@
+# API audit system configuration
+
+# Enable/disable the audit system
+audit:
+  enabled: true
+
+  # Content logging configuration
+  log-request-body: true
+  log-response-body: false
+  max-body-size: 4000
+  log-headers: true
+  log-query-params: true
+
+  # Paths excluded from audit logging
+  exclude-paths:
+    - /actuator/**
+    - /swagger-ui/**
+    - /v3/api-docs/**
+    - /favicon.ico
+
+  # Detailed rate limit violation logging configuration
+  detailed-rate-limit-logging: true
+
+  # Sensitive information retention (should be false in production)
+  retain-sensitive-info: false
+
+  # Database configuration for audit logs
+  # It is recommended to use a separate table or even a separate database for audit logs in production
+  # spring:
+  #   datasource:
+  #     audit:
+  #       url: jdbc:postgresql://localhost:5432/audit_db
+  #       username: audit_user
+  #       password: audit_password
+
+  # Audit data retention configuration
+  # Implement retention policies to manage audit table growth
+  # retention-days: 90
